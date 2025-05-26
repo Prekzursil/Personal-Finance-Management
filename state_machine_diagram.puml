@@ -1,0 +1,60 @@
+@startuml Diagrama Mașină de Stare
+
+skinparam state {
+  BackgroundColor<<Initial>> #87b741
+  BackgroundColor<<Final>> #red
+}
+
+[*] --> Inactiv <<Initial>>
+
+state Inactiv {
+  [*] --> AsteptareInput
+  AsteptareInput --> TranzactieInitiata : Utilizator Click Adaugă Tranzacție
+}
+
+state TranzactieInitiata {
+  state "Introducere Date" as IntroducereDate {
+    [*] --> IntroducereSuma
+    IntroducereSuma --> SelectareCategorie
+    SelectareCategorie --> SelectareTip
+  }
+}
+
+state "Validare" as Validare {
+  state "Verificare Sumă" as VerificareSuma
+  state "Verificare Buget" as VerificareBuget
+}
+
+state "Procesare" as Procesare {
+  state "Salvare în Baza de Date" as SalvareBD
+  state "Actualizare Totaluri" as ActualizareTotaluri
+  state "Reîmprospătare Tablou de Bord" as ReimprospatareTableau
+}
+
+TranzactieInitiata --> Validare : Trimite Tranzacție
+Validare --> Procesare : Date Valide
+Validare --> TranzactieInitiata : Date Invalide
+
+Procesare --> Finalizat : Succes
+Procesare --> Eșuat : Eroare
+
+state Finalizat {
+  state "Actualizare Grafice" as ActualizareGrafice
+  state "Afișare Mesaj Succes" as AfisareSucces
+}
+
+state Eșuat {
+  state "Afișare Mesaj Eroare" as AfisareEroare
+  state "Înregistrare Eroare" as InregistrareEroare
+}
+
+Finalizat --> Inactiv : Revenire la Tablou de Bord
+Eșuat --> Inactiv : Încearcă Din Nou
+
+state "Stări Tranzacție" as Legenda {
+  state "Stări Active" as StariActive
+  state "Stări de Eroare" as StariEroare
+  state "Stări de Succes" as StariSucces
+}
+
+@enduml

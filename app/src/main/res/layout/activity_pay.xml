@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    tools:context=".PayActivity">
+
+    <!-- ✖ button -->
+    <ImageView
+        android:id="@+id/close_pay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        android:padding="5dp"
+        android:src="@drawable/close"
+        android:contentDescription="@string/closebutton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="1.0" />
+
+    <!-- app title -->
+    <TextView
+        android:id="@+id/thriftyTitlePay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/app_name"
+        android:textSize="26sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- ADD EXPENSE heading -->
+    <TextView
+        android:id="@+id/ExpenseTextViewPay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_expense"
+        android:textColor="?attr/colorOnBackground"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/dateTextViewPay"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintVertical_bias="0.39" />
+
+    <!-- date -->
+    <TextView
+        android:id="@+id/dateTextViewPay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/textview"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/thriftyTitlePay"
+        app:layout_constraintBottom_toTopOf="@+id/tagTextViewPay"
+        app:layout_constraintHorizontal_bias="0.231"
+        app:layout_constraintVertical_bias="0.292" />
+
+    <!-- amount input -->
+    <EditText
+        android:id="@+id/payEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="49dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/enter_the_amount_spent"
+        android:inputType="number"
+        android:ems="10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateTextViewPay"
+        app:layout_constraintBottom_toTopOf="@+id/gridLayoutPay"
+        app:layout_constraintHorizontal_bias="0.236"
+        app:layout_constraintVertical_bias="0.139" />
+
+    <!-- tag input -->
+    <EditText
+        android:id="@+id/tagEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/enter_tag"
+        android:inputType="text"
+        android:ems="10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/payEditText"
+        app:layout_constraintBottom_toTopOf="@+id/gridLayoutPay"
+        app:layout_constraintHorizontal_bias="0.236"
+        app:layout_constraintVertical_bias="0.275" />
+
+    <!-- “Tag” label -->
+    <TextView
+        android:id="@+id/tagTextViewPay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="12dp"
+        android:drawableLeft="@drawable/tag"
+        android:text=" Tag"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/gridLayoutPay" />
+
+    <!-- **********  SCROLLABLE TAG GRID (keeps original ID)  ********** -->
+    <HorizontalScrollView
+        android:id="@+id/gridLayoutPay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.508"
+        app:layout_constraintVertical_bias="0.825">
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:useDefaultMargins="true">
+
+            <!-- Row 0 -->
+            <ImageView
+                android:id="@+id/transportImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/transport1"
+                android:tag="0"
+                app:layout_row="0" app:layout_column="0" />
+
+            <ImageView
+                android:id="@+id/foodImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/food1"
+                android:contentDescription="Food"
+                android:tag="1"
+                app:layout_row="0" app:layout_column="1" />
+
+            <ImageView
+                android:id="@+id/billsImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/bills1"
+                android:tag="2"
+                app:layout_row="0" app:layout_column="2" />
+
+            <ImageView
+                android:id="@+id/sportsImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/sports1"
+                android:contentDescription="Sports"
+                android:tag="3"
+                app:layout_row="0" app:layout_column="3" />
+
+            <!-- Row 1 -->
+            <ImageView
+                android:id="@+id/homeImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/home1"
+                android:tag="4"
+                app:layout_row="1" app:layout_column="0" />
+
+            <ImageView
+                android:id="@+id/petsImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/pets1"
+                android:tag="5"
+                app:layout_row="1" app:layout_column="1" />
+
+            <ImageView
+                android:id="@+id/educationImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/education1"
+                android:contentDescription="Education"
+                android:tag="6"
+                app:layout_row="1" app:layout_column="2" />
+
+            <ImageView
+                android:id="@+id/travelImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/travel1"
+                android:tag="7"
+                app:layout_row="1" app:layout_column="3" />
+
+            <!-- Row 2 -->
+            <ImageView
+                android:id="@+id/beautyImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/beauty1"
+                android:tag="8"
+                app:layout_row="2" app:layout_column="0" />
+
+            <ImageView
+                android:id="@+id/kidsImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/kids1"
+                android:tag="9"
+                app:layout_row="2" app:layout_column="1" />
+
+            <ImageView
+                android:id="@+id/healthImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/medicines1"
+                android:tag="10"
+                app:layout_row="2" app:layout_column="2" />
+
+            <ImageView
+                android:id="@+id/movieImageViewP"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/movie1"
+                android:tag="11"
+                app:layout_row="2" app:layout_column="3" />
+
+        </GridLayout>
+    </HorizontalScrollView>
+    <!-- **********  END SCROLLABLE STRIP  ********** -->
+
+    <!-- send FAB -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButtonPay"
+        android:layout_width="49dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:src="@drawable/arrowright"
+        android:clickable="true"
+        app:backgroundTint="?attr/colorSecondary"
+        app:tint="?attr/colorOnSecondary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/close_pay"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintVertical_bias="1.0" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

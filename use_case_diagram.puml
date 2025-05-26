@@ -1,0 +1,46 @@
+@startuml Diagrama Cazurilor de Utilizare
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor Utilizator
+actor "Sistem de Plăți" as SP
+
+rectangle "Sistem de Gestionare a Finanțelor Personale" {
+  usecase "Înregistrare" as UC1
+  usecase "Autentificare" as UC2
+  usecase "Gestionare Profil" as UC3
+  usecase "Vizualizare Tablou de Bord" as UC4
+  usecase "Gestionare Tranzacții" as UC5
+  usecase "Adăugare Tranzacție" as UC5.1
+  usecase "Vizualizare Istoric Tranzacții" as UC5.2
+  usecase "Gestionare Buget" as UC6
+  usecase "Setare Limite Buget" as UC6.1
+  usecase "Urmărire Cheltuieli" as UC6.2
+  usecase "Setare Alerte" as UC7
+  usecase "Scanare Facturi" as UC8
+  usecase "Efectuare Plăți" as UC9
+  usecase "Generare Rapoarte" as UC10
+
+  UC5 <|-- UC5.1
+  UC5 <|-- UC5.2
+  UC6 <|-- UC6.1
+  UC6 <|-- UC6.2
+}
+
+Utilizator --> UC1
+Utilizator --> UC2
+Utilizator --> UC3
+Utilizator --> UC4
+Utilizator --> UC5
+Utilizator --> UC6
+Utilizator --> UC7
+Utilizator --> UC8
+Utilizator --> UC9
+Utilizator --> UC10
+
+SP --> UC9
+
+note "Toate cazurile de utilizare cu excepția\nÎnregistrării necesită autentificare" as N1
+
+@enduml

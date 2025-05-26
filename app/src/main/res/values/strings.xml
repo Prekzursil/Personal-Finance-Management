@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MY BUDGET</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="email">Email Id</string>
+    <string name="passowrd">Password</string>
+    <string name="login">LOGIN</string>
+    <string name="show_pwd">Show Password</string>
+    <string name="hide_pwd">Hide Password</string>
+    <string name="closebutton">Close Button for Activity</string>
+    <string name="newUser">Not a Member yet? Sign Up here.</string>
+    <string name="fullName">Full Name</string>
+    <string name="mobileNumber">Mobile Number</string>
+    <string name="location">Location</string>
+    <string name="confirmPassword">Confirm Password</string>
+    <string name="terms_conditions">By clicking SignUp you agree all the Terms and Conditions.</string>
+    <string name="signUp">SIGN UP</string>
+    <string name="already_user">Already have Account? Login here.</string>
+    <string name="registered_emailid">Please enter your Registered Email Id below:</string>
+    <string name="submit">SUBMIT</string>
+    <string name="back">BACK</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+
+    <string name="default_web_client_id">474332582091-jn1pe7g2240oa322oot1454vte4m1nv3.apps.googleusercontent.com</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="log_out">Log out</string>
+    <string name="home">Home</string>
+    <string name="alerts">Alerts</string>
+    <string name="income">INCOME</string>
+    <string name="expense">EXPENSE</string>
+    <string name="transactions">TRANSACTIONS</string>
+    <string name="show_all">Show All</string>
+    <string name="click_icon_to_confirm_download">Click icon to confirm download</string>
+    <string name="pdf_file_will_be_located_in_documents_folder">PDF File will be located in Documents folder.</string>
+    <string name="change_budget">CHANGE BUDGET</string>
+    <string name="amount_to_set_budget_this_month">Amount to set budget this month</string>
+    <string name="set_budgets_carefully_you_will_receive_alerts_when_you_spend_more_than_half_of_the_allocated_budget">Set budgets carefully. You will receive alerts when you spend more than half of the allocated budget.</string>
+    <string name="add_reminder">ADD REMINDER</string>
+    <string name="what_do_you_want_to_be_reminded_of">What do you want to be reminded of?</string>
+    <string name="reminder">Reminder</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="reminders">REMINDERS</string>
+    <string name="current_budget">Current Budget</string>
+    <string name="add_expense">ADD EXPENSE</string>
+    <string name="textview">TextView</string>
+    <string name="enter_the_amount_spent">Enter the amount spent</string>
+    <string name="enter_tag">Enter tag</string>
+    <string name="no_text_available">No Text Available</string>
+    <string name="proceed">Proceed</string>
+    <string name="tip_of_the_day">Tip of the day</string>
+    <string name="note_down_all_your_spendings_and_track_them_this_might_help_you_in_setting_goals_to_save_money">Note down all your spendings and track them. This might help you in setting goals to save money.</string>
+    <string name="add_income">ADD INCOME</string>
+    <string name="enter_the_amount_taken">Enter the amount taken</string>
+    <string name="all_transactions">ALL\nTRANSACTIONS</string>
+    <string name="expenses_pie_chart">Expenses\nPie Chart</string>
+    <string name="income_pie_chart">Income\nPie Chart</string>
+    <string name="download_report">Download Report</string>
+    <string name="scan">scan</string>
+    <string name="take">take</string>
+    <string name="pay">pay</string>
+    <string name="login_to_continue">LOGIN TO CONTINUE</string>
+    <string name="title_income">Income</string>
+    <string name="title_expenses">Expenses</string>
+    <string name="title_transactions">Transactions</string>
+    <string name="summary">Summary</string>
+
+    <!-- Filter Options -->
+    <string name="filter_current_month">Current Month</string>
+    <string name="filter_all_time">All Time</string>
+
+    <!-- Download Report Date Selection -->
+    <string name="select_date_range_for_report">Select Date Range for Report</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="download_custom_range_report">Download Report for Selected Range</string>
+    <string name="download_all_time_report">Download All Time Report</string>
+    <string name="no_data_for_period">No data to display for the selected period.</string>
+
+    <!-- PDF Report Strings -->
+    <string name="pdf_header_tag">Transaction Tag</string>
+    <string name="pdf_header_amount">Amount (€)</string>
+    <string name="pdf_header_date">Transaction date</string>
+    <string name="pdf_header_type">Type</string>
+    <string name="pdf_type_expense">Expense</string>
+    <string name="pdf_type_income">Income</string>
+    <string name="pdf_title_transactions_for_user">Transactions for %1$s</string>
+    <string name="pdf_title_transactions_for_user_custom_range">Transactions for %1$s (%2$s - %3$s)</string>
+    <string name="pdf_title_transactions_for_user_all_time">Transactions for %1$s (All Time)</string>
+    <string name="pdf_generated_by">Generated by %1$s</string>
+    <string name="pdf_generated_on">Generated on</string>
+    <string name="pdf_no_transactions_for_period">No transactions found for the selected period.</string>
+
+    <!-- Download Activity Specific Strings -->
+    <string name="select_start_end_dates_message">Please select both start and end dates.</string>
+    <string name="storage_permission_needed_message">You need to allow access to Storage</string>
+    <string name="download_completed_notification_text">Download Completed.</string>
+    <string name="notification_channel_pdf_downloads">PDF Downloads</string>
+    <string name="report_pdf_downloaded_successfully_toast">Report PDF \'%1$s\' downloaded successfully.</string>
+    <string name="storage_permission_granted_toast">Storage permission granted. Please try downloading again.</string>
+    <string name="storage_permission_denied_toast">Storage permission denied. Cannot save PDF.</string>
+    <string name="pdf_not_available_preview_toast">PDF file not available for preview.</string>
+    <string name="no_app_to_open_pdf_toast">No application found to open PDF.</string>
+    <string name="download_pdf_viewer_toast">Download a PDF Viewer to see the generated PDF</string>
+
+
+    <string name="cat_transport">Transport</string>
+    <string name="cat_food">Food</string>
+    <string name="cat_bills">Bills</string>
+    <string name="cat_sports">Sports</string>
+    <string name="cat_home">Home</string>
+    <string name="cat_pets">Pets</string>
+    <string name="cat_education">Education</string>
+    <string name="cat_travel">Travel</string>
+    <string name="cat_beauty">Beauty</string>
+    <string name="cat_kids">Kids</string>
+    <string name="cat_healthcare">Healthcare</string>
+    <string name="cat_movie">Movie</string>
+
+
+<!-- Settings -->
+<string name="pref_title_theme">Theme</string>
+<string name="pref_theme_light">Light</string>
+<string name="pref_theme_dark">Dark</string>
+<string name="pref_theme_system">Use system default</string>
+
+<string name="pref_title_language">Language</string>
+<string name="pref_language_english">English</string>
+<string name="pref_language_romanian">Romănă</string>
+<string name="pref_language_system">Use system default</string>
+
+<string name="pref_title_backup">Backup to Google Drive now</string>
+<string name="pref_title_restore">Restore from Google Drive</string>
+
+<string-array name="pref_theme_entries">
+    <item>@string/pref_theme_light</item>
+    <item>@string/pref_theme_dark</item>
+    <item>@string/pref_theme_system</item>
+</string-array>
+<string-array name="pref_theme_values">
+    <item>light</item>
+    <item>dark</item>
+    <item>system</item>
+</string-array>
+
+<string-array name="pref_language_entries">
+    <item>@string/pref_language_english</item>
+    <item>@string/pref_language_romanian</item>
+    <item>@string/pref_language_system</item>
+</string-array>
+<string-array name="pref_language_values">
+    <item>en</item>
+    <item>ro</item>
+    <item>system</item>
+</string-array>
+    <!-- Navigation titles -->
+    <string name="options">Options</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+
+    <!-- Reminder Activity Strings -->
+    <string name="error_empty_reminder_fields">Please enter reminder, date, and time.</string>
+    <string name="error_reminder_in_past">Reminder date and time cannot be in the past.</string>
+    <string name="error_invalid_user_id">Error: Invalid user ID.</string>
+    <string name="error_saving_reminder">Error saving reminder to database.</string>
+    <string name="error_alarm_service_unavailable">Error: Alarm service is unavailable.</string>
+    <string name="reminder_set_success">Reminder set successfully.</string>
+    <string name="error_invalid_datetime_format">Invalid date/time format. Use DD/MM/YYYY and HH:MM.</string>
+    <string name="error_scheduling_reminder">An error occurred while scheduling the reminder.</string>
+
+    <!-- Settings -->
+    <string name="pref_title_change_budget">Change Budget</string>
+    <string name="pref_category_budget_title">Budget Management</string>
+    <string name="pref_title_current_budget">Current Budget</string>
+    <string name="pref_summary_current_budget_value">%s €</string>
+    <string name="date_format_display">MMM dd, yyyy</string>
+    <string name="scan_guidance_text">Align receipt text in view</string>
+    <string name="toggle_flash">Toggle Flash</string>
+    <string name="capture_text">Capture Text</string>
+    <string name="clear_scan">Clear</string>
+    <string-array name="ocr_amount_keywords">
+        <item>Total</item>
+        <item>Amount</item>
+        <item>Balance</item>
+        <item>Due</item>
+        <item>TOTAL</item>
+        <item>AMOUNT</item>
+        <item>BALANCE</item>
+        <item>DUE</item>
+    </string-array>
+</resources>

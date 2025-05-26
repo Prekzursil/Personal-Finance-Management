@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/options">
+
+    <ListPreference
+        android:key="pref_theme"
+        android:title="@string/pref_title_theme"
+        android:entries="@array/pref_theme_entries"
+        android:entryValues="@array/pref_theme_values"
+        android:defaultValue="system"
+        android:summary="%s" />
+
+    <ListPreference
+        android:key="pref_language"
+        android:title="@string/pref_title_language"
+        android:entries="@array/pref_language_entries"
+        android:entryValues="@array/pref_language_values"
+        android:defaultValue="system"
+        android:summary="%s" />
+
+    <Preference
+        android:key="pref_backup"
+        android:title="@string/pref_title_backup" />
+
+    <Preference
+        android:key="pref_restore"
+        android:title="@string/pref_title_restore" />
+
+    <PreferenceCategory
+        android:title="@string/pref_category_budget_title">
+
+        <Preference
+            android:key="pref_display_current_budget"
+            android:title="@string/pref_title_current_budget"
+            android:summary="Loading..."
+            android:selectable="false" />
+
+        <Preference
+            android:key="pref_change_budget"
+            android:title="@string/pref_title_change_budget"
+            android:summary="Set or update your monthly budget"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

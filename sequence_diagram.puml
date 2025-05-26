@@ -1,0 +1,63 @@
+@startuml Diagrama de Secvență
+
+actor Utilizator
+participant "Tablou de Bord" as TB
+participant "ActivitatePlata" as AP
+participant "AjutorBazaDate" as BD
+database "Baza de Date SQLite" as SQL
+
+Utilizator -> TB: Click Adaugă Tranzacție
+activate TB
+
+TB -> AP: Lansează Activitate Plată
+activate AP
+
+AP -> AP: Afișează Formular Tranzacție
+Utilizator -> AP: Introduce Detalii Tranzacție\n(sumă, categorie, tip)
+
+AP -> AP: valideazaSuma()
+activate AP
+AP --> AP: rezultat validare
+deactivate AP
+
+alt#Gold #LightGreen Sumă Validă
+    AP -> BD: adaugaTranzactie(tranzactie)
+    activate BD
+    
+    BD -> SQL: INSERT Tranzacție
+    activate SQL
+    SQL --> BD: Succes
+    deactivate SQL
+    
+    BD --> AP: Tranzacție Adăugată
+    deactivate BD
+    
+    AP -> BD: setareVenitCheltuieli()
+    activate BD
+    BD -> SQL: SELECT SUM(suma)
+    activate SQL
+    SQL --> BD: Totaluri Actualizate
+    deactivate SQL
+    BD --> AP: Venit/Cheltuieli Actualizate
+    deactivate BD
+    
+    AP --> TB: Revenire la Tablou de Bord
+    TB -> BD: obtineCheltuieli()
+    activate BD
+    BD -> SQL: SELECT Cheltuieli
+    activate SQL
+    SQL --> BD: Date Cheltuieli
+    deactivate SQL
+    BD --> TB: Sumar Cheltuieli
+    deactivate BD
+    
+    TB -> TB: actualizeazaGrafice()
+    
+else #Pink Sumă Invalidă
+    AP -> AP: Afișează Mesaj Eroare
+end
+
+deactivate AP
+deactivate TB
+
+@enduml

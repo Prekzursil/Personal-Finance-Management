@@ -1,0 +1,101 @@
+@startuml Diagrama de Clase
+
+skinparam classAttributeIconSize 0
+
+class ActivitatePrincipala {
+  - ajutorBazaDate: AjutorBazaDate
+  + onCreate(Bundle): void
+  + onBackPressed(): void
+}
+
+class AjutorBazaDate {
+  - VERSIUNE_BD: int
+  - NUME_BD: String
+  - bd: SQLiteDatabase
+  + adaugaContact(Contact, String): void
+  + cautaParola(String): List<String>
+  + obtineUtilizator(): Contact
+  + adaugaTranzactie(Tranzactii): void
+  + obtineTranzactii(): ArrayList<String>
+  + setareVenitCheltuieli(): void
+  + obtineCheltuieli(): HashMap<String, Integer>
+  + adaugaMemento(TabelAlerte): void
+  + obtineAlerte(): ArrayList<String>
+}
+
+class Contact {
+  - id: int
+  - nume: String
+  - email: String
+  - telefon: long
+  - parola: String
+  - buget: long
+  + getteri()
+  + setteri()
+}
+
+class Tranzactii {
+  - tid: int
+  - uid: int
+  - eticheta: String
+  - suma: int
+  - tipTranzactie: int
+  - creat_la: String
+  + getteri()
+  + setteri()
+}
+
+class TabelAlerte {
+  - id_alerta: int
+  - uid: int
+  - mesaj: String
+  - alerta_la: String
+  + getteri()
+  + setteri()
+}
+
+class TablouBord {
+  - graficPie: GraficPie
+  - graficBare: GraficBare
+  + onCreate(Bundle): void
+  + actualizeazaGrafice(): void
+  + afiseazaDetaliiCheltuieli(): void
+}
+
+class ActivitatePlata {
+  + proceseazaPlata(): void
+  + valideazaSuma(): boolean
+}
+
+class ActivitateBuget {
+  + seteazaBuget(): void
+  + actualizeazaBuget(): void
+}
+
+class ActivitateTranzactii {
+  + afiseazaTranzactii(): void
+  + filtreazaTranzactii(): void
+}
+
+class ActivitateAlerte {
+  + afiseazaAlerte(): void
+  + creeazaAlerta(): void
+}
+
+ActivitatePrincipala --> AjutorBazaDate
+ActivitatePrincipala --> "1" Fragment_Autentificare
+ActivitatePrincipala --> "1" Fragment_Inregistrare
+
+AjutorBazaDate "1" --> "*" Contact : gestioneaza
+AjutorBazaDate "1" --> "*" Tranzactii : gestioneaza
+AjutorBazaDate "1" --> "*" TabelAlerte : gestioneaza
+
+TablouBord --> AjutorBazaDate
+ActivitatePlata --> AjutorBazaDate
+ActivitateBuget --> AjutorBazaDate
+ActivitateTranzactii --> AjutorBazaDate
+ActivitateAlerte --> AjutorBazaDate
+
+note "Toate activitățile extind AppCompatActivity" as N1
+
+@enduml

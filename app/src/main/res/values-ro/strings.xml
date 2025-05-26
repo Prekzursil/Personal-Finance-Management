@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BUGETUL MEU</string>
+    <string name="hello_world">Salut lume!</string>
+    <string name="action_settings">Setări</string>
+    <string name="email">Adresă de email</string>
+    <string name="passowrd">Parolă</string>
+    <string name="login">AUTENTIFICARE</string>
+    <string name="show_pwd">Afișează parola</string>
+    <string name="hide_pwd">Ascunde parola</string>
+    <string name="closebutton">Buton de închidere pentru activitate</string>
+    <string name="newUser">Nu ești membru încă? Înscrie-te aici.</string>
+    <string name="fullName">Nume complet</string>
+    <string name="mobileNumber">Număr de telefon</string>
+    <string name="location">Locație</string>
+    <string name="confirmPassword">Confirmă parola</string>
+    <string name="terms_conditions">Prin apăsarea pe Înscriere, ești de acord cu Termenii și Condițiile.</string>
+    <string name="signUp">ÎNSCRIE-TE</string>
+    <string name="already_user">Ai deja un cont? Autentifică-te aici.</string>
+    <string name="registered_emailid">Te rugăm să introduci adresa de email înregistrată mai jos:</string>
+    <string name="submit">TRIMITE</string>
+    <string name="back">ÎNAPOI</string>
+    <string name="title_activity_main2">ActivitateMain2</string>
+    <string name="title_home">Acasă</string>
+    <string name="title_dashboard">Tablou de bord</string>
+    <string name="title_notifications">Notificări</string>
+    <string name="hello_blank_fragment">Salut, fragment gol</string>
+    <string name="dashboard">Tablou de bord</string>
+    <string name="log_out">Deconectează-te</string>
+    <string name="home">Acasă</string>
+    <string name="alerts">Alerte</string>
+    <string name="income">VENIT</string>
+    <string name="expense">CHELTUIELI</string>
+    <string name="transactions">TRANZACȚII</string>
+    <string name="show_all">Afișează tot</string>
+    <string name="click_icon_to_confirm_download">Apasă pe iconiță pentru a confirma descărcarea</string>
+    <string name="pdf_file_will_be_located_in_documents_folder">Fișierul PDF va fi localizat în folderul Documente.</string>
+    <string name="change_budget">SCHIMBĂ BUGET</string>
+    <string name="amount_to_set_budget_this_month">Sumă pentru a seta bugetul lunii</string>
+    <string name="set_budgets_carefully_you_will_receive_alerts_when_you_spend_more_than_half_of_the_allocated_budget">Setează bugetele cu atenție. Vei primi alerte când cheltuiești mai mult de jumătate din bugetul alocat.</string>
+    <string name="add_reminder">ADAUGĂ MEMENTO</string>
+    <string name="what_do_you_want_to_be_reminded_of">Despre ce dorești să fii reamintit?</string>
+    <string name="reminder">Memento</string>
+    <string name="date">Dată</string>
+    <string name="time">Oră</string>
+    <string name="reminders">MEMENTOURI</string>
+    <string name="current_budget">Buget curent</string>
+    <string name="add_expense">ADAUGĂ CHELTUIALĂ</string>
+    <string name="textview">TextView</string>
+    <string name="enter_the_amount_spent">Introdu suma cheltuită</string>
+    <string name="enter_tag">Introdu eticheta</string>
+    <string name="no_text_available">Nu există text disponibil</string>
+    <string name="proceed">Continuă</string>
+    <string name="tip_of_the_day">Sfatul zilei</string>
+    <string name="note_down_all_your_spendings_and_track_them_this_might_help_you_in_setting_goals_to_save_money">Notează toate cheltuielile tale și urmărește-le. Acest lucru te-ar putea ajuta să-ți setezi obiective de economisire.</string>
+    <string name="add_income">ADAUGĂ VENIT</string>
+    <string name="enter_the_amount_taken">Introdu suma primită</string>
+    <string name="all_transactions">Toate\nTranzacțiile</string>
+    <string name="expenses_pie_chart">Diagrama\nde Cheltuieli</string>
+    <string name="income_pie_chart">Diagrama\nde Venituri</string>
+    <string name="download_report">Descarcă raport</string>
+    <string name="scan">Scanează</string>
+    <string name="take">Încasează</string>
+    <string name="pay">Plătește</string>
+    <string name="login_to_continue">AUTENTIFICĂ-TE PENTRU A CONTINUA</string>
+
+    <string name="cat_transport">Transport</string>	
+    <string name="cat_food">Mâncare</string>
+    <string name="cat_bills">Facturi</string>
+    <string name="cat_sports">Sport</string>
+    <string name="cat_home">Casă</string>
+    <string name="cat_pets">Animale de companie</string>
+    <string name="cat_education">Educație</string>
+    <string name="cat_travel">Călătorii</string>
+    <string name="cat_beauty">Îngrijire personală</string>
+    <string name="cat_kids">Copii</string>
+    <string name="cat_healthcare">Sănătate</string>
+    <string name="cat_movie">Filme</string>
+
+
+    <string name="options">Opțiuni</string>
+    <!-- Setări -->
+<string name="pref_title_theme">Temă</string>
+<string name="pref_theme_light">Luminos</string>
+<string name="pref_theme_dark">Întunecat</string>
+<string name="pref_theme_system">Implicit sistem</string>
+
+<string name="pref_title_language">Limbă</string>
+<string name="pref_language_english">Engleză</string>
+<string name="pref_language_romanian">Română</string>
+<string name="pref_language_system">Implicit sistem</string>
+
+<string name="pref_title_backup">Salvează acum pe Google Drive</string>
+<string name="pref_title_restore">Restaurează din Google Drive</string>
+
+<string-array name="pref_theme_entries">
+    <item>@string/pref_theme_light</item>
+    <item>@string/pref_theme_dark</item>
+    <item>@string/pref_theme_system</item>
+</string-array>
+<string-array name="pref_theme_values">
+    <item>light</item>
+    <item>dark</item>
+    <item>system</item>
+</string-array>
+
+<string-array name="pref_language_entries">
+    <item>@string/pref_language_english</item>
+    <item>@string/pref_language_romanian</item>
+    <item>@string/pref_language_system</item>
+</string-array>
+<string-array name="pref_language_values">
+    <item>en</item>
+    <item>ro</item>
+    <item>system</item>
+</string-array>
+    <string name="title_expenses">CHELTUIELI</string>
+    <string name="title_transactions">TRANZACȚII</string>
+    <string name="title_income">VENIT</string>
+    <string name="summary">Sumar</string>
+
+    <!-- Filter Options -->
+    <string name="filter_current_month">Lună curentă</string>
+    <string name="filter_all_time">Tot timpul</string>
+
+    <!-- Download Report Date Selection -->
+    <string name="select_date_range_for_report">Selectați intervalul de date pentru raport</string>
+    <string name="start_date">Data de început</string>
+    <string name="end_date">Data de sfârșit</string>
+    <string name="download_custom_range_report">Descărcați raportul pentru intervalul selectat</string>
+    <string name="download_all_time_report">Descărcați raportul pentru tot timpul</string>
+    <string name="no_data_for_period">Nu există date pentru perioada selectată.</string>
+
+    <!-- PDF Report Strings -->
+    <string name="pdf_header_tag">Etichetă tranzacție</string>
+    <string name="pdf_header_amount">Sumă (€)</string>
+    <string name="pdf_header_date">Data tranzacției</string>
+    <string name="pdf_header_type">Tip</string>
+    <string name="pdf_type_expense">Cheltuială</string>
+    <string name="pdf_type_income">Venit</string>
+    <string name="pdf_title_transactions_for_user">Tranzacții pentru %1$s</string>
+    <string name="pdf_title_transactions_for_user_custom_range">Tranzacții pentru %1$s (%2$s - %3$s)</string>
+    <string name="pdf_title_transactions_for_user_all_time">Tranzacții pentru %1$s (Tot timpul)</string>
+    <string name="pdf_generated_by">Generat de %1$s</string>
+    <string name="pdf_generated_on">Generat la</string>
+    <string name="pdf_no_transactions_for_period">Nu s-au găsit tranzacții pentru perioada selectată.</string>
+
+    <!-- Download Activity Specific Strings -->
+    <string name="select_start_end_dates_message">Vă rugăm să selectați atât data de început, cât și data de sfârșit.</string>
+    <string name="storage_permission_needed_message">Este necesară permisiunea de acces la stocare</string>
+    <string name="download_completed_notification_text">Descărcare finalizată.</string>
+    <string name="notification_channel_pdf_downloads">Descărcări PDF</string>
+    <string name="report_pdf_downloaded_successfully_toast">Raportul PDF \'%1$s\' descărcat cu succes.</string>
+    <string name="storage_permission_granted_toast">Permisiune de stocare acordată. Vă rugăm să încercați din nou descărcarea.</string>
+    <string name="storage_permission_denied_toast">Permisiune de stocare refuzată. Nu se poate salva PDF-ul.</string>
+    <string name="pdf_not_available_preview_toast">Fișierul PDF nu este disponibil pentru previzualizare.</string>
+    <string name="no_app_to_open_pdf_toast">Nu s-a găsit nicio aplicație pentru a deschide PDF-ul.</string>
+    <string name="download_pdf_viewer_toast">Descărcați un vizualizator PDF pentru a vedea PDF-ul generat</string>
+
+    <!-- Reminder Activity Strings -->
+    <string name="error_empty_reminder_fields">Te rugăm să introduci memento, data și ora.</string>
+    <string name="error_reminder_in_past">Data și ora mementoului nu pot fi în trecut.</string>
+    <string name="error_invalid_user_id">Eroare: ID utilizator invalid.</string>
+    <string name="error_saving_reminder">Eroare la salvarea mementoului în baza de date.</string>
+    <string name="error_alarm_service_unavailable">Eroare: Serviciul de alarme nu este disponibil.</string>
+    <string name="reminder_set_success">Memento setat cu succes.</string>
+    <string name="error_invalid_datetime_format">Format dată/oră invalid. Folosește ZZ/LL/AAAA și HH:MM.</string>
+    <string name="error_scheduling_reminder">A apărut o eroare la programarea mementoului.</string>
+
+    <!-- Settings -->
+    <string name="pref_title_change_budget">Schimbă Bugetul</string>
+    <string name="pref_category_budget_title">Gestionare Buget</string>
+    <string name="pref_title_current_budget">Buget Curent</string>
+    <string name="pref_summary_current_budget_value">%s €</string>
+    <string name="date_format_display">MMM dd, yyyy</string>
+    <string name="scan_guidance_text">Aliniați textul chitanței în cadru</string>
+    <string name="toggle_flash">Comutare Bliț</string>
+    <string name="capture_text">Captură Text</string>
+    <string name="clear_scan">Curăță</string>
+    <string-array name="ocr_amount_keywords">
+        <item>Total</item>
+        <item>Suma</item>
+        <item>Sold</item>
+        <item>De plată</item>
+        <item>TOTAL</item>
+        <item>SUMA</item>
+        <item>SOLD</item>
+        <item>DE PLATĂ</item>
+    </string-array>
+</resources>

@@ -1,0 +1,52 @@
+@startuml Structura Bazei de Date
+
+!define table(x) class x << (T,#FFAAAA) >>
+!define primary_key(x) <u>x</u>
+!define foreign_key(x) #x#
+
+hide methods
+hide stereotypes
+
+table(Utilizatori) {
+  primary_key(id_utilizator): INTEGER
+  email: TEXT
+  parola: TEXT
+  nume: TEXT
+  creat_la: DATETIME
+}
+
+table(Tranzactii) {
+  primary_key(id_tranzactie): INTEGER
+  foreign_key(id_utilizator): INTEGER
+  suma: DECIMAL(10,2)
+  tip: TEXT
+  categorie: TEXT
+  descriere: TEXT
+  data: DATETIME
+}
+
+table(Bugete) {
+  primary_key(id_buget): INTEGER
+  foreign_key(id_utilizator): INTEGER
+  categorie: TEXT
+  suma: DECIMAL(10,2)
+  perioada: TEXT
+  data_inceput: DATE
+  data_sfarsit: DATE
+}
+
+table(Alerte) {
+  primary_key(id_alerta): INTEGER
+  foreign_key(id_utilizator): INTEGER
+  tip: TEXT
+  mesaj: TEXT
+  valoare_declansare: DECIMAL(10,2)
+  este_activ: BOOLEAN
+  creat_la: DATETIME
+}
+
+Utilizatori "1" -- "0..*" Tranzactii
+Utilizatori "1" -- "0..*" Bugete
+Utilizatori "1" -- "0..*" Alerte
+
+@enduml

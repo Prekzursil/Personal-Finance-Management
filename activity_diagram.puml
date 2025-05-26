@@ -1,0 +1,49 @@
+@startuml Diagrama de Activitate
+
+|Utilizator|
+start
+:Lansare Aplicație;
+
+|Sistem|
+if (Utilizator Autentificat?) then (nu)
+  :Afișare Ecran Autentificare;
+  |Utilizator|
+  :Introducere Credențiale;
+  |Sistem|
+  if (Credențiale Valide?) then (da)
+    :Încărcare Tablou de Bord;
+  else (nu)
+    :Afișare Eroare;
+    stop
+  endif
+else (da)
+  :Încărcare Tablou de Bord;
+endif
+
+|Utilizator|
+fork
+  :Adăugare Tranzacție;
+  |Sistem|
+  :Actualizare Sold;
+  :Actualizare Istoric Tranzacții;
+  :Verificare Limite Buget;
+  if (Buget Depășit?) then (da)
+    :Trimite Alertă;
+  endif
+fork again
+  :Vizualizare Rapoarte;
+  |Sistem|
+  :Generare Analiză Cheltuieli;
+  :Afișare Grafice;
+fork again
+  :Gestionare Buget;
+  |Sistem|
+  :Actualizare Setări Buget;
+  :Aplicare Limite Noi;
+end fork
+
+|Utilizator|
+:Deconectare;
+stop
+
+@enduml

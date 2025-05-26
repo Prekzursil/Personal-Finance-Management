@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "20868760117",
+    "project_id": "personal-budget-app-f6ebc",
+    "storage_bucket": "personal-budget-app-f6ebc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20868760117:android:b6dd30da8971d62740277c",
+        "android_client_info": {
+          "package_name": "com.preethi.thrifty"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "20868760117-o4sl3neiq4ngk3vmbuahs4vkp3fp4k97.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.preethi.thrifty",
+            "certificate_hash": "2251ca8dc35ef9fdea060de9605b8374195d20e8"
+          }
+        },
+        {
+          "client_id": "20868760117-11i8aj7fep8ntjm316tmgk9dco8pu1m5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2cW2udKIVS6Oai-ao9itKktb8F9R3_KE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "20868760117-11i8aj7fep8ntjm316tmgk9dco8pu1m5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,79 @@
+@startuml Diagrama de Componente
+
+package "Aplicație de Gestionare a Finanțelor Personale" {
+    
+    [Strat Interfață Utilizator] as UI
+    package "Activități" {
+        [ActivitatePrincipala]
+        [TablouBord]
+        [ActivitateTranzactii]
+        [ActivitatePlata]
+        [ActivitateAlerte]
+        [ActivitateBuget]
+    }
+
+    package "Autentificare" {
+        [Fragment Autentificare]
+        [Fragment Înregistrare]
+        [Autentificare Google]
+    }
+
+    package "Strat Acces Date" {
+        [AjutorBazaDate]
+        database "Baza de Date SQLite" {
+            [Tabel Utilizatori]
+            [Tabel Tranzacții]
+            [Tabel Alerte]
+        }
+    }
+
+    package "Logică de Afaceri" {
+        [Manager Tranzacții]
+        [Manager Buget]
+        [Manager Alerte]
+        [Generator Rapoarte]
+    }
+
+    package "Utilități" {
+        [Toast Personalizat]
+        [Clase Utilitare]
+        [Formatator Dată]
+    }
+
+    package "Servicii Externe" {
+        [Scanner Facturi]
+        [Gateway Plăți]
+    }
+}
+
+' Interfețe
+interface "Autentificare Utilizator" as InterfataAutentificare
+interface "Stocare Date" as InterfataStorare
+interface "Procesare Tranzacții" as InterfataTranzactii
+interface "Gestionare Alerte" as InterfataAlerte
+
+' Relații
+UI --> Activități
+ActivitatePrincipala --> InterfataAutentificare
+[Fragment Autentificare] --> InterfataAutentificare
+[Fragment Înregistrare] --> InterfataAutentificare
+InterfataAutentificare --> [AjutorBazaDate]
+
+Activități --> InterfataTranzactii
+InterfataTranzactii --> [Manager Tranzacții]
+[Manager Tranzacții] --> InterfataStorare
+InterfataStorare --> [AjutorBazaDate]
+
+[Manager Buget] --> InterfataStorare
+[Manager Alerte] --> InterfataStorare
+[Generator Rapoarte] --> InterfataStorare
+
+[AjutorBazaDate] --> [Baza de Date SQLite]
+[Scanner Facturi] --> [Manager Tranzacții]
+[Gateway Plăți] --> [Manager Tranzacții]
+
+[Manager Tranzacții] ..> [Toast Personalizat] : utilizează
+[Manager Alerte] ..> [Formatator Dată] : utilizează
+Activități ..> [Clase Utilitare] : utilizează
+
+@enduml

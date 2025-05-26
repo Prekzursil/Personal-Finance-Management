@@ -1,0 +1,68 @@
+@startuml Diagrama de Deployment
+
+skinparam node {
+    BorderColor #black
+    BackgroundColor #white
+}
+
+node "Dispozitiv Android" as dispozitiv {
+    node "Aplicație Finanțe Personale" as aplicatie {
+        component "Interfață Utilizator" as ui
+        component "Logică de Afaceri" as logica
+        component "Stocare Locală" as stocare {
+            database "Baza de Date SQLite" as bd
+        }
+        component "Servicii" as servicii
+    }
+    
+    artifact "Preferințe Partajate" as preferinte
+    artifact "Cache Aplicație" as cache
+}
+
+node "Platforma Google Cloud" as gcp {
+    node "Servicii Firebase" {
+        component "Autentificare" as autentificare
+        component "Stocare Cloud" as stocare_cloud
+        component "Analiză" as analiza
+    }
+}
+
+node "Servicii Externe" as extern {
+    component "Gateway Plăți" as plati
+    component "API Scanner Facturi" as scanner
+}
+
+' Conexiuni
+dispozitiv -- gcp : HTTPS
+dispozitiv -- extern : HTTPS
+
+ui -- logica
+logica -- stocare
+logica -- servicii
+
+servicii -- autentificare : OAuth 2.0
+servicii -- stocare_cloud : REST API
+servicii -- analiza : SDK Analiză
+
+servicii -- plati : REST API
+servicii -- scanner : REST API
+
+stocare -- preferinte : citire/scriere
+stocare -- cache : stocare temporară
+
+note right of dispozitiv
+  Android 5.0+
+  Conexiune Internet Necesară
+end note
+
+note right of gcp
+  Gestionează Autentificarea
+  și Serviciile Cloud
+end note
+
+note right of extern
+  Servicii Terțe pentru
+  Funcționalitate Extinsă
+end note
+
+@enduml

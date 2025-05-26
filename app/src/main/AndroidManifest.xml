@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Required for scheduling exact alarms on Android 12+ -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application android:name=".ThriftyApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+        <activity android:exported="true" android:name=".Download"></activity>
+        <activity android:exported="true" android:name=".SplashActivity" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:exported="true" android:name=".Dashboard" />
+        <activity android:exported="true" android:name=".scanActivity" />
+        <activity android:exported="true" android:name=".TakeActivity" />
+        <activity android:exported="true" android:name=".PayActivity" />
+        <activity android:exported="true" android:name=".AlertsActivity" />
+        <activity android:exported="true" android:name=".TransactionsActivity" />
+        <activity android:exported="true" android:name=".AddBudgetActivity" />
+        <activity android:exported="true" android:name=".AddReminderActivity" />
+        <meta-data
+            android:name="com.google.android.gms.vision.DEPENDENCIES"
+            android:value="ocr" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/options"
+            android:parentActivityName=".Dashboard" />
+    <receiver android:name=".ReminderReceiver" android:exported="false"/>
+    <receiver android:name=".BootReceiver" android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED" />
+        </intent-filter>
+    </receiver>
+    </application>
+
+</manifest>
