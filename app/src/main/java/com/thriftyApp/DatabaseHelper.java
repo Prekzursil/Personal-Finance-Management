@@ -288,8 +288,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     }
                     else
                         amount = " € "+amount;
-                    if(tag != null)
+                    if (tag != null) {
                         list.add("\n" + tag + "\n" + amount + "\n" + timeB + "\n");
+                    }
                 }while(cursor.moveToNext ());
             }
         }
@@ -413,8 +414,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor c2 = db.rawQuery (expenseQuery, expenseSelectionArgs);
         if (c2.moveToFirst () ) {
             String expense = c2.getString (0);
-            if (expense != null)
-            Utils.expense = Integer.parseInt (expense);
+            if (expense != null) {
+                Utils.expense = Integer.parseInt(expense);
+            }
             Log.i("EXPENSE", String.valueOf (Utils.expense));
         }
         c2.close ();
