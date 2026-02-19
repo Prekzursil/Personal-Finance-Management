@@ -50,6 +50,7 @@ import androidx.camera.core.FocusMeteringAction;
 import androidx.camera.core.MeteringPoint;
 import androidx.camera.core.MeteringPointFactory;
 
+@androidx.camera.core.ExperimentalGetImage
 public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraphicTapListener {
 
     PreviewView cameraPreviewView;
