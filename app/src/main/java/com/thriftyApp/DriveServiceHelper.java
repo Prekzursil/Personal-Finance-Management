@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
@@ -62,6 +63,7 @@ public class DriveServiceHelper {
         return accessToken;
     }
 
+    @SuppressLint("MissingPermission")
     private synchronized void invalidateToken() {
         if (accessToken != null) {
             GoogleAuthUtil.invalidateToken(context, accessToken);
