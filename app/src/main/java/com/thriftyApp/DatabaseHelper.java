@@ -95,12 +95,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, new String[]{googleUserId});
 
         if (cursor.moveToFirst()) {
-            int idIndex = cursor.getColumnIndex(COLUMN_ID);
-            int emailIndex = cursor.getColumnIndex(COLUMN_EMAIL);
-            int passwordIndex = cursor.getColumnIndex(COLUMN_PASSWORD);
-            int mobileIndex = cursor.getColumnIndex(COLUMN_MOBILE);
-            int budgetIndex = cursor.getColumnIndex(COLUMN_BUDGET);
-            int nameIndex = cursor.getColumnIndex(COLUMN_NAME);
+            int idIndex = cursor.getColumnIndexOrThrow(COLUMN_ID);
+            int emailIndex = cursor.getColumnIndexOrThrow(COLUMN_EMAIL);
+            int passwordIndex = cursor.getColumnIndexOrThrow(COLUMN_PASSWORD);
+            int mobileIndex = cursor.getColumnIndexOrThrow(COLUMN_MOBILE);
+            int budgetIndex = cursor.getColumnIndexOrThrow(COLUMN_BUDGET);
+            int nameIndex = cursor.getColumnIndexOrThrow(COLUMN_NAME);
 
             if (idIndex >= 0) {
                 c.setId(cursor.getInt(idIndex));
@@ -256,11 +256,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst ()) {
             if(cursor.getCount () > 0) {
                 do {
-                    int idxAmount   = cursor.getColumnIndex(COL_AMOUNT);
-                    int idxTag      = cursor.getColumnIndex(COL_TAG);
-                    int idxDatetime = cursor.getColumnIndex(COL_DATETIME);
-                    int idxExin     = cursor.getColumnIndex(COL_EXIN);
-                    int idxUid      = cursor.getColumnIndex(COL_U_ID);
+                    int idxAmount   = cursor.getColumnIndexOrThrow(COL_AMOUNT);
+                    int idxTag      = cursor.getColumnIndexOrThrow(COL_TAG);
+                    int idxDatetime = cursor.getColumnIndexOrThrow(COL_DATETIME);
+                    int idxExin     = cursor.getColumnIndexOrThrow(COL_EXIN);
+                    int idxUid      = cursor.getColumnIndexOrThrow(COL_U_ID);
 
                     amount = cursor.getString(idxAmount);
                     tag    = cursor.getString(idxTag);
@@ -321,13 +321,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst ()) {
             do {
             t = new Transactions ();
-            t.setTid(cursor.getInt(cursor.getColumnIndex(COL_TID)));
+            t.setTid(cursor.getInt(cursor.getColumnIndexOrThrow(COL_TID)));
 
-            int idxAmount   = cursor.getColumnIndex(COL_AMOUNT);
-            int idxTag      = cursor.getColumnIndex(COL_TAG);
-            int idxDatetime = cursor.getColumnIndex(COL_DATETIME);
-            int idxExin     = cursor.getColumnIndex(COL_EXIN);
-            int idxUid      = cursor.getColumnIndex(COL_U_ID);
+            int idxAmount   = cursor.getColumnIndexOrThrow(COL_AMOUNT);
+            int idxTag      = cursor.getColumnIndexOrThrow(COL_TAG);
+            int idxDatetime = cursor.getColumnIndexOrThrow(COL_DATETIME);
+            int idxExin     = cursor.getColumnIndexOrThrow(COL_EXIN);
+            int idxUid      = cursor.getColumnIndexOrThrow(COL_U_ID);
 
             amount = cursor.getString(idxAmount);
             tag    = cursor.getString(idxTag);
@@ -493,7 +493,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(Utils.userId)});
 
         if (cursor.moveToFirst()) {
-            int monthIndex = cursor.getColumnIndex("month");
+            int monthIndex = cursor.getColumnIndexOrThrow("month");
             if (monthIndex >= 0) {
                 do {
                     months.add(cursor.getString(monthIndex));
@@ -520,10 +520,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery (query, null);
 
         if (cursor.moveToFirst ()) {
-            int alertIdIndex = cursor.getColumnIndex(COL_ALERT_ID);
-            int alertTimeIndex = cursor.getColumnIndex(COL_ALERT_TIME);
-            int alertMessageIndex = cursor.getColumnIndex(COL_ALERT_MESSAGE);
-            int userIdIndex = cursor.getColumnIndex(COL_USER_ID);
+            int alertIdIndex = cursor.getColumnIndexOrThrow(COL_ALERT_ID);
+            int alertTimeIndex = cursor.getColumnIndexOrThrow(COL_ALERT_TIME);
+            int alertMessageIndex = cursor.getColumnIndexOrThrow(COL_ALERT_MESSAGE);
+            int userIdIndex = cursor.getColumnIndexOrThrow(COL_USER_ID);
 
             do {
                 AlertsTable reminder = new AlertsTable();
@@ -549,10 +549,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             reminder = new AlertsTable();
-            int alertIdIndex = cursor.getColumnIndex(COL_ALERT_ID);
-            int alertTimeIndex = cursor.getColumnIndex(COL_ALERT_TIME);
-            int alertMessageIndex = cursor.getColumnIndex(COL_ALERT_MESSAGE);
-            int userIdIndex = cursor.getColumnIndex(COL_USER_ID);
+            int alertIdIndex = cursor.getColumnIndexOrThrow(COL_ALERT_ID);
+            int alertTimeIndex = cursor.getColumnIndexOrThrow(COL_ALERT_TIME);
+            int alertMessageIndex = cursor.getColumnIndexOrThrow(COL_ALERT_MESSAGE);
+            int userIdIndex = cursor.getColumnIndexOrThrow(COL_USER_ID);
 
             if(alertIdIndex != -1) reminder.setAid(cursor.getInt(alertIdIndex));
             if(alertTimeIndex != -1) reminder.setalert_at(cursor.getString(alertTimeIndex));
@@ -623,13 +623,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     JSONObject contact = new JSONObject();
-                    contact.put("id", cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
-                    contact.put("name", cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
-                    contact.put("email", cursor.getString(cursor.getColumnIndex(COLUMN_EMAIL)));
-                    contact.put("mobile", cursor.getLong(cursor.getColumnIndex(COLUMN_MOBILE)));
-                    contact.put("budget", cursor.getInt(cursor.getColumnIndex(COLUMN_BUDGET)));
-                    contact.put("password", cursor.getString(cursor.getColumnIndex(COLUMN_PASSWORD)));
-                    contact.put("google_id", cursor.getString(cursor.getColumnIndex(COLUMN_GOOGLE_ID)));
+                    contact.put("id", cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+                    contact.put("name", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+                    contact.put("email", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+                    contact.put("mobile", cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_MOBILE)));
+                    contact.put("budget", cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BUDGET)));
+                    contact.put("password", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+                    contact.put("google_id", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GOOGLE_ID)));
                     contacts.put(contact);
                 } while (cursor.moveToNext());
             }
@@ -643,12 +643,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     JSONObject transaction = new JSONObject();
-                    transaction.put("id", cursor.getInt(cursor.getColumnIndex(COL_TID)));
-                    transaction.put("uid", cursor.getInt(cursor.getColumnIndex(COL_U_ID)));
-                    transaction.put("tag", cursor.getString(cursor.getColumnIndex(COL_TAG)));
-                    transaction.put("exin", cursor.getInt(cursor.getColumnIndex(COL_EXIN)));
-                    transaction.put("amount", cursor.getInt(cursor.getColumnIndex(COL_AMOUNT)));
-                    transaction.put("created_at", cursor.getString(cursor.getColumnIndex(COL_DATETIME)));
+                    transaction.put("id", cursor.getInt(cursor.getColumnIndexOrThrow(COL_TID)));
+                    transaction.put("uid", cursor.getInt(cursor.getColumnIndexOrThrow(COL_U_ID)));
+                    transaction.put("tag", cursor.getString(cursor.getColumnIndexOrThrow(COL_TAG)));
+                    transaction.put("exin", cursor.getInt(cursor.getColumnIndexOrThrow(COL_EXIN)));
+                    transaction.put("amount", cursor.getInt(cursor.getColumnIndexOrThrow(COL_AMOUNT)));
+                    transaction.put("created_at", cursor.getString(cursor.getColumnIndexOrThrow(COL_DATETIME)));
                     transactions.put(transaction);
                 } while (cursor.moveToNext());
             }
@@ -662,10 +662,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     JSONObject alert = new JSONObject();
-                    alert.put("alert_id", cursor.getInt(cursor.getColumnIndex(COL_ALERT_ID)));
-                    alert.put("user_id", cursor.getInt(cursor.getColumnIndex(COL_USER_ID)));
-                    alert.put("message", cursor.getString(cursor.getColumnIndex(COL_ALERT_MESSAGE)));
-                    alert.put("time", cursor.getString(cursor.getColumnIndex(COL_ALERT_TIME)));
+                    alert.put("alert_id", cursor.getInt(cursor.getColumnIndexOrThrow(COL_ALERT_ID)));
+                    alert.put("user_id", cursor.getInt(cursor.getColumnIndexOrThrow(COL_USER_ID)));
+                    alert.put("message", cursor.getString(cursor.getColumnIndexOrThrow(COL_ALERT_MESSAGE)));
+                    alert.put("time", cursor.getString(cursor.getColumnIndexOrThrow(COL_ALERT_TIME)));
                     alerts.put(alert);
                 } while (cursor.moveToNext());
             }
