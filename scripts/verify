@@ -1,21 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GRADLE_VERSION="${GRADLE_VERSION:-8.11.1}"
-
-# Temporary CI compatibility patch for deprecated jcenter usage.
-sed -i 's/jcenter()/mavenCentral()/g' build.gradle app/build.gradle 2>/dev/null || true
-
-if [[ ! -f ./gradlew || ! -f gradle/wrapper/gradle-wrapper.properties ]]; then
-  gradle wrapper --gradle-version "$GRADLE_VERSION" --no-daemon
+if [[ ! -f ./gradlew || ! -f gradle/wrapper/gradle-wrapper.properties || ! -f gradle/wrapper/gradle-wrapper.jar ]]; then
+  echo "Gradle wrapper is required. Commit gradlew and gradle/wrapper/* to the repository." >&2
+  exit 1
 fi
 
-if [[ -f gradle/wrapper/gradle-wrapper.properties ]]; then
-  sed -i -E "s#gradle-[0-9.]+-(all|bin)\\.zip#gradle-${GRADLE_VERSION}-bin.zip#g" gradle/wrapper/gradle-wrapper.properties
-fi
 chmod +x ./gradlew
-
-# Prefer full target; fallback to unit-test only for legacy plugin compatibility.
-if ! ./gradlew --no-daemon testDebugUnitTest lintDebug; then
-  ./gradlew --no-daemon testDebugUnitTest
-fi
+./gradlew --no-daemon testDebugUnitTest lintDebug
