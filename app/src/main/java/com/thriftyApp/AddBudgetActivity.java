@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import com.thriftyApp.BaseActivity;
@@ -54,6 +55,7 @@ public class AddBudgetActivity extends BaseActivity {
         });
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         // Redirect to SettingsActivity as "Change Budget" is now accessed from there
