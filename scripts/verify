@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+GRADLE_VERSION="${GRADLE_VERSION:-8.11.1}"
+
 # Temporary CI compatibility patch for deprecated jcenter usage.
 sed -i 's/jcenter()/mavenCentral()/g' build.gradle app/build.gradle 2>/dev/null || true
 
-if [[ ! -f ./gradlew ]]; then
-  gradle wrapper --gradle-version 7.6.4 --no-daemon
+if [[ ! -f ./gradlew || ! -f gradle/wrapper/gradle-wrapper.properties ]]; then
+  gradle wrapper --gradle-version "$GRADLE_VERSION" --no-daemon
+fi
+
+if [[ -f gradle/wrapper/gradle-wrapper.properties ]]; then
+  sed -i -E "s#gradle-[0-9.]+-(all|bin)\\.zip#gradle-${GRADLE_VERSION}-bin.zip#g" gradle/wrapper/gradle-wrapper.properties
 fi
 chmod +x ./gradlew
 
