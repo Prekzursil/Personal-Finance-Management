@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ ! -f ./gradlew ]]; then
+  echo "gradlew missing: bootstrapping wrapper"
+  gradle wrapper --no-daemon
+fi
+chmod +x ./gradlew
+./gradlew --no-daemon testDebugUnitTest lintDebug
