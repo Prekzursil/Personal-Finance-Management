@@ -447,6 +447,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         }
     }
 
+    @androidx.camera.core.ExperimentalGetImage
     private void bindCameraUseCases() {
         if (cameraProvider == null) {
             Log.e(TAG, "Camera provider is null, cannot bind use cases.");
