@@ -18,6 +18,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import androidx.core.graphics.ColorUtils;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
@@ -131,7 +132,7 @@ public final class ChartUtils {
             chart.setExtraOffsets(dp5, dp10, dp5, dp10); // Minimal offsets
 
             // Set line color based on theme (good practice, though lines are not drawn here)
-            boolean isDarkTheme = Color.luminance(onBg) > 0.5;
+            boolean isDarkTheme = ColorUtils.calculateLuminance(onBg) > 0.5;
             ds.setValueLineColor(isDarkTheme ? Color.DKGRAY : Color.GRAY);
 
 
