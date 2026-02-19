@@ -177,6 +177,8 @@
     <string name="toggle_flash">Comutare Bliț</string>
     <string name="capture_text">Captură Text</string>
     <string name="clear_scan">Curăță</string>
+    <string name="edit">Editează</string>
+    <string name="delete">Șterge</string>
     <string-array name="ocr_amount_keywords">
         <item>Total</item>
         <item>Suma</item>
