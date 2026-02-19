@@ -74,12 +74,12 @@ public class TakeActivity extends BaseActivity {
         String formattedDate = dateFormat.format(new Date());
         dateTextView.setText(formattedDate); 
 
-        addIncome.setOnClickListener (v -> {
-            if (take.getText ().toString ().equals ("") || tag.getText ().toString ().equals ("")) {
-                Toast.makeText (getApplicationContext (),"Enter valid amount and tag.",Toast.LENGTH_SHORT).show ();
+        addIncome.setOnClickListener(v -> {
+            if (take.getText().toString().equals("") || tag.getText().toString().equals("")) {
+                Toast.makeText(getApplicationContext(), "Enter valid amount and tag.", Toast.LENGTH_SHORT).show();
+            } else {
+                addTake();
             }
-            else
-            addTake();
         });
 
         thrifty.setOnClickListener (v -> {
