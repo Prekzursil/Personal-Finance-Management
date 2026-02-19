@@ -133,7 +133,7 @@ public class Login_Fragment extends Fragment implements OnClickListener {
         shakeAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
 
         try {
-            ColorStateList csl = AppCompatResources.getColorStateList(requireContext(), R.drawable.text_selector);
+            ColorStateList csl = AppCompatResources.getColorStateList(requireContext(), R.color.text_selector);
             if (csl == null) {
                 throw new IllegalStateException("Missing text selector color state list");
             }

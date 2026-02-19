@@ -76,7 +76,7 @@ public class SignUp_Fragment extends Fragment implements OnClickListener {
 
 		// Setting text selector over textviews
 		try {
-			ColorStateList csl = AppCompatResources.getColorStateList(requireContext(), R.drawable.text_selector);
+			ColorStateList csl = AppCompatResources.getColorStateList(requireContext(), R.color.text_selector);
 			if (csl == null) {
 				throw new IllegalStateException("Missing text selector color state list");
 			}
