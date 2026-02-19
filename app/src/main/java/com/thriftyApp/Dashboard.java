@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -453,6 +454,7 @@ public class Dashboard extends BaseActivity {
         getTChart(); // Uses updated Utils.income/expense
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         Intent i = new Intent(this, MainActivity.class);

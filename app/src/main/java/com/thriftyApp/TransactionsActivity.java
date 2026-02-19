@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent;
@@ -102,6 +103,7 @@ public class TransactionsActivity extends BaseActivity {
         pay.setVisibility(vis);
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         startActivity(new Intent(this, Dashboard.class));

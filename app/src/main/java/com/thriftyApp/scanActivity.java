@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -428,6 +429,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         finish();
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         finish();

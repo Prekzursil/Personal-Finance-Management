@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -144,6 +145,7 @@ public class AlertsActivity extends BaseActivity implements ReminderAdapter.OnRe
     }
     */
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         Intent intent = new Intent (getApplicationContext (),Dashboard.class);

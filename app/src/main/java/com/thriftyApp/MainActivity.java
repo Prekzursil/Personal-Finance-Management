@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import com.thriftyApp.BaseActivity;
@@ -57,8 +58,9 @@ public class MainActivity extends BaseActivity {
 						Utils.Login_Fragment).commit();
 	}
 
-	@Override
-	public void onBackPressed() {
+	@SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
 
 		// Find the tag of sign up and forgot password fragment
 		Fragment SignUp_Fragment = fragmentManager

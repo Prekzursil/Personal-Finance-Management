@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import com.thriftyApp.BaseActivity;
 import com.thriftyApp.Transactions;
@@ -102,6 +103,7 @@ public class TakeActivity extends BaseActivity {
         finish ();
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         Intent intent = new Intent (getApplicationContext (),TransactionsActivity.class);
