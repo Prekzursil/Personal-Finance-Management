@@ -50,7 +50,6 @@ import androidx.camera.core.FocusMeteringAction;
 import androidx.camera.core.MeteringPoint;
 import androidx.camera.core.MeteringPointFactory;
 
-@androidx.camera.core.ExperimentalGetImage
 public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraphicTapListener {
 
     PreviewView cameraPreviewView;
@@ -448,7 +447,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         }
     }
 
-    @androidx.camera.core.ExperimentalGetImage
+    @androidx.annotation.OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
     private void bindCameraUseCases() {
         if (cameraProvider == null) {
             Log.e(TAG, "Camera provider is null, cannot bind use cases.");
@@ -493,7 +492,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         }
     }
 
-    @androidx.camera.core.ExperimentalGetImage
+    @androidx.annotation.OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
     private class TextAnalyzer implements ImageAnalysis.Analyzer {
         @Override
         public void analyze(@NonNull ImageProxy imageProxy) {
