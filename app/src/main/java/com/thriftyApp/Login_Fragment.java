@@ -3,7 +3,6 @@ package com.thriftyApp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.method.HideReturnsTransformationMethod;
@@ -24,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -133,8 +133,10 @@ public class Login_Fragment extends Fragment implements OnClickListener {
         shakeAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
 
         try {
-            XmlResourceParser xrp = getResources().getXml(R.drawable.text_selector);
-            ColorStateList csl = ColorStateList.createFromXml(getResources(), xrp);
+            ColorStateList csl = AppCompatResources.getColorStateList(requireContext(), R.drawable.text_selector);
+            if (csl == null) {
+                throw new IllegalStateException("Missing text selector color state list");
+            }
             show_hide_password.setTextColor(csl);
             signUp.setTextColor(csl);
         } catch (Exception e) {
