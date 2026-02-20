@@ -25,3 +25,4 @@
 - [ ] Change is minimal and task-focused
 - [ ] No unrelated refactors included
 - [ ] No secrets or private tokens added
+- [ ] Verification command run and output included in Evidence section

@@ -46,6 +46,11 @@ jobs:
               c.body?.includes(`- #${issue_number}:`)
             );
 
+            if (hadInProgress && existingContract) {
+              core.info("Idempotency guard: already in-progress with existing contract; skipping.");
+              return;
+            }
+
             let addedInProgress = false;
             let removedReady = false;
 
@@ -104,7 +109,7 @@ jobs:
                 body: lines.join("\n"),
               });
             } catch (error) {
-              core.warning(`Queue transition failed: ${error.message}`);
+              core.error(`Queue transition failed: ${error.message}`);
 
               if (addedInProgress && !hadInProgress) {
                 try {
@@ -115,7 +120,7 @@ jobs:
                     name: "agent:in-progress",
                   });
                 } catch (rollbackError) {
-                  core.warning(`Rollback remove agent:in-progress failed: ${rollbackError.message}`);
+                  core.error(`Rollback remove agent:in-progress failed: ${rollbackError.message}`);
                 }
               }
 
@@ -128,7 +133,7 @@ jobs:
                     labels: ["agent:ready"],
                   });
                 } catch (rollbackError) {
-                  core.warning(`Rollback add agent:ready failed: ${rollbackError.message}`);
+                  core.error(`Rollback add agent:ready failed: ${rollbackError.message}`);
                 }
               }
 
