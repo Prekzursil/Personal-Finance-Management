@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ ! -f ./gradlew || ! -f gradle/wrapper/gradle-wrapper.properties || ! -f gradle/wrapper/gradle-wrapper.jar ]]; then
+  echo "Gradle wrapper is required. Commit gradlew and gradle/wrapper/* to the repository." >&2
+  exit 1
+fi
+
+chmod +x ./gradlew
+./gradlew --no-daemon testDebugUnitTest lintDebug

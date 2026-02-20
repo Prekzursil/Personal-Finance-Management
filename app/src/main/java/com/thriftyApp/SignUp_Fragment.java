@@ -2,7 +2,6 @@ package com.thriftyApp;
 
 
 import android.content.res.ColorStateList;
-import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 
 import java.util.regex.Matcher;
@@ -75,10 +75,11 @@ public class SignUp_Fragment extends Fragment implements OnClickListener {
 		confirmPassword.setText(uid);
 
 		// Setting text selector over textviews
-		XmlResourceParser xrp = getResources().getXml(R.drawable.text_selector);
 		try {
-			ColorStateList csl = ColorStateList.createFromXml(getResources(),
-					xrp);
+			ColorStateList csl = AppCompatResources.getColorStateList(requireContext(), R.color.text_selector);
+			if (csl == null) {
+				throw new IllegalStateException("Missing text selector color state list");
+			}
 
 			login.setTextColor(csl);
 			terms_conditions.setTextColor(csl);

@@ -1,5 +1,6 @@
  package com.thriftyApp;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.AlertDialog; // Import AlertDialog
 import android.app.DatePickerDialog;
@@ -175,6 +176,7 @@ public class AddReminderActivity extends BaseActivity {
     }
 
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         startActivity(new Intent(getApplicationContext(), AlertsActivity.class));
