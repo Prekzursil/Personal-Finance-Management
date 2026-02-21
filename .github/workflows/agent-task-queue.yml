@@ -46,25 +46,10 @@ jobs:
               c.body?.includes(`- #${issue_number}:`)
             );
 
-            if (hadInProgress && existingContract) {
-              core.info("Idempotency guard: already in-progress with existing contract; skipping.");
-              return;
-            }
-
             let addedInProgress = false;
             let removedReady = false;
 
             try {
-              if (!hadInProgress) {
-                await github.rest.issues.addLabels({
-                  owner,
-                  repo,
-                  issue_number,
-                  labels: ["agent:in-progress"],
-                });
-                addedInProgress = true;
-              }
-
               if (hadReady) {
                 try {
                   await github.rest.issues.removeLabel({
@@ -81,6 +66,21 @@ jobs:
                     throw error;
                   }
                 }
+              }
+
+              if (hadInProgress && existingContract) {
+                core.info("Idempotency guard: already in-progress with existing contract; agent:ready consumed.");
+                return;
+              }
+
+              if (!hadInProgress) {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number,
+                  labels: ["agent:in-progress"],
+                });
+                addedInProgress = true;
               }
 
               if (existingContract) {
