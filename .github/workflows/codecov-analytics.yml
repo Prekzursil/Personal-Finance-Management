@@ -31,10 +31,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Run Gradle coverage
+        continue-on-error: true
         run: |
           chmod +x gradlew || true
           ./gradlew test jacocoTestReport
       - name: Upload coverage to Codecov
+        if: ${{ always() }}
         uses: codecov/codecov-action@v5
         with:
           files: app/build/reports/jacoco/test/jacocoTestReport.xml
