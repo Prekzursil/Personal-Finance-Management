@@ -5,6 +5,8 @@ on:
   push:
     paths:
       - '.github/workflows/agent-label-sync.yml'
+      - 'AGENTS.md'
+      - '.github/ISSUE_TEMPLATE/agent_task.yml'
 
 permissions:
   contents: read
