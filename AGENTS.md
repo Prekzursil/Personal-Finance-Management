@@ -28,3 +28,6 @@ bash scripts/verify
 
 ## Queue Trigger Warning
 Applying label `agent:ready` triggers the queue workflow immediately.
+The workflow is idempotent: if `agent:in-progress` is already set and an
+execution contract comment exists, the run exits early without creating
+a duplicate contract or re-mutating labels.
