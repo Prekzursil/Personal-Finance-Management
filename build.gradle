@@ -27,6 +27,10 @@ allprojects {
     }
 }
 
+tasks.register("jacocoTestReport") {
+    dependsOn(":app:jacocoTestReport")
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

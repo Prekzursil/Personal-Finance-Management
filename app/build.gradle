@@ -1,6 +1,13 @@
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 //noinspection GradleCompatible
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.8.12"
+}
 
 android {
     compileSdk 34
@@ -25,6 +32,15 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+    }
+
+    testOptions {
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = ['jdk.internal.*']
+            }
+        }
     }
 }
 
@@ -74,4 +90,47 @@ dependencies {
 
     // RecyclerView for lists
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
+}
+
+tasks.register("jacocoTestReport", JacocoReport) {
+    dependsOn("testDebugUnitTest")
+
+    def coverageExclusions = [
+            '**/R.class',
+            '**/R$*.class',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*Test*.*',
+            'android/**/*.*',
+            '**/*$Lambda$*.*',
+            '**/*Companion*.*',
+            '**/*Module*.*',
+            '**/*Dagger*.*',
+            '**/*Hilt*.*'
+    ]
+
+    def javaDebugTree = fileTree(
+            dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes",
+            excludes: coverageExclusions
+    )
+    def legacyJavaDebugTree = fileTree(
+            dir: "${buildDir}/intermediates/javac/debug/classes",
+            excludes: coverageExclusions
+    )
+
+    classDirectories.setFrom(files(javaDebugTree, legacyJavaDebugTree))
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+            'jacoco/testDebugUnitTest.exec',
+            'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec',
+            'outputs/unit_test_code_coverage/debugUnitTest/**/*.exec'
+    ]))
+
+    reports {
+        xml.required = true
+        xml.outputLocation = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+        html.required = true
+        html.outputLocation = file("${buildDir}/reports/jacoco/html")
+        csv.required = false
+    }
 }
