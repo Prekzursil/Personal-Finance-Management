@@ -156,7 +156,7 @@ tasks.register("jacocoTestReport", JacocoReport) {
 
             pkg.sourcefile.each { sourceFile ->
                 def sourceFileName = sourceFile.@name.text()
-                def relativePathParts = ["app", "src", "main", "java"]
+                def relativePathParts = []
                 if (packageName) {
                     relativePathParts += packageName.split("/") as List
                 }
