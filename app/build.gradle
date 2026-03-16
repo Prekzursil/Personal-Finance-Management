@@ -178,7 +178,7 @@ tasks.register("jacocoTestReport", JacocoReport) {
 
                 packageClasses << [
                         name        : sourceFileName.replace(".java", ""),
-                        filename    : relativePath,
+                        filename    : "app/src/main/java/${relativePath}",
                         lineRate    : sourceLinesValid == 0 ? "1.0" : String.format(java.util.Locale.ROOT, "%.4f", sourceLinesCovered / (double) sourceLinesValid),
                         lines       : lineEntries,
                 ]
@@ -210,7 +210,7 @@ tasks.register("jacocoTestReport", JacocoReport) {
                     'timestamp': (System.currentTimeMillis() / 1000L).toString()
             ) {
                 sources {
-                    source("app/src/main/java")
+                    source(".")
                 }
                 packages {
                     packageEntries.each { packageEntry ->
