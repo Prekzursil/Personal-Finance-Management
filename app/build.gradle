@@ -1,6 +1,13 @@
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 //noinspection GradleCompatible
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.8.12"
+}
 
 android {
     compileSdk 34
@@ -25,6 +32,15 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+    }
+
+    testOptions {
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = ['jdk.internal.*']
+            }
+        }
     }
 }
 
@@ -74,4 +90,153 @@ dependencies {
 
     // RecyclerView for lists
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
+}
+
+tasks.register("jacocoTestReport", JacocoReport) {
+    dependsOn("testDebugUnitTest")
+
+    def jacocoXmlReport = file("${buildDir}/reports/jacoco/test/jacocoTestReport-jacoco.xml")
+    def coberturaXmlReport = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+
+    def coverageExclusions = [
+            '**/R.class',
+            '**/R$*.class',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*Test*.*',
+            'android/**/*.*',
+            '**/*$Lambda$*.*',
+            '**/*Companion*.*',
+            '**/*Module*.*',
+            '**/*Dagger*.*',
+            '**/*Hilt*.*'
+    ]
+
+    def javaDebugTree = fileTree(
+            dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes",
+            excludes: coverageExclusions
+    )
+    def legacyJavaDebugTree = fileTree(
+            dir: "${buildDir}/intermediates/javac/debug/classes",
+            excludes: coverageExclusions
+    )
+
+    classDirectories.setFrom(files(javaDebugTree, legacyJavaDebugTree))
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+            'jacoco/testDebugUnitTest.exec',
+            'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec',
+            'outputs/unit_test_code_coverage/debugUnitTest/**/*.exec'
+    ]))
+
+    reports {
+        xml.required = true
+        xml.outputLocation = jacocoXmlReport
+        html.required = true
+        html.outputLocation = file("${buildDir}/reports/jacoco/html")
+        csv.required = false
+    }
+
+    doLast {
+        if (!jacocoXmlReport.exists()) {
+            throw new GradleException("JaCoCo XML report was not generated at ${jacocoXmlReport}")
+        }
+
+        def sanitizedJacocoXml = jacocoXmlReport.getText("UTF-8").replaceFirst(/<!DOCTYPE[^>]*>/, "")
+        def report = new XmlSlurper(false, false).parseText(sanitizedJacocoXml)
+        def packageEntries = []
+        int totalLinesValid = 0
+        int totalLinesCovered = 0
+
+        report.package.each { pkg ->
+            def packageName = pkg.@name.text()
+            def packageClasses = []
+            int packageLinesValid = 0
+            int packageLinesCovered = 0
+
+            pkg.sourcefile.each { sourceFile ->
+                def sourceFileName = sourceFile.@name.text()
+                def relativePathParts = []
+                if (packageName) {
+                    relativePathParts += packageName.split("/") as List
+                }
+                relativePathParts << sourceFileName
+                def relativePath = relativePathParts.join("/")
+
+                def lineEntries = sourceFile.line.collect { line ->
+                    def hits = (line.@ci.text() ?: "0") as Integer
+                    [
+                            number: (line.@nr.text() ?: "0") as Integer,
+                            hits  : hits > 0 ? hits : 0,
+                    ]
+                }
+
+                int sourceLinesValid = lineEntries.size()
+                int sourceLinesCovered = lineEntries.count { it.hits > 0 }
+                packageLinesValid += sourceLinesValid
+                packageLinesCovered += sourceLinesCovered
+
+                packageClasses << [
+                        name        : sourceFileName.replace(".java", ""),
+                        filename    : "app/src/main/java/${relativePath}",
+                        lineRate    : sourceLinesValid == 0 ? "1.0" : String.format(java.util.Locale.ROOT, "%.4f", sourceLinesCovered / (double) sourceLinesValid),
+                        lines       : lineEntries,
+                ]
+            }
+
+            totalLinesValid += packageLinesValid
+            totalLinesCovered += packageLinesCovered
+
+            packageEntries << [
+                    name        : packageName.replace("/", "."),
+                    lineRate    : packageLinesValid == 0 ? "1.0" : String.format(java.util.Locale.ROOT, "%.4f", packageLinesCovered / (double) packageLinesValid),
+                    classes     : packageClasses,
+            ]
+        }
+
+        coberturaXmlReport.parentFile.mkdirs()
+        coberturaXmlReport.withWriter("UTF-8") { writer ->
+            def xml = new groovy.xml.MarkupBuilder(writer)
+            xml.mkp.xmlDeclaration(version: "1.0", encoding: "UTF-8")
+            xml.coverage(
+                    'line-rate': totalLinesValid == 0 ? "1.0" : String.format(java.util.Locale.ROOT, "%.4f", totalLinesCovered / (double) totalLinesValid),
+                    'branch-rate': "1.0",
+                    'lines-covered': totalLinesCovered,
+                    'lines-valid': totalLinesValid,
+                    'branches-covered': "0",
+                    'branches-valid': "0",
+                    'complexity': "0.0",
+                    'version': "1.9",
+                    'timestamp': (System.currentTimeMillis() / 1000L).toString()
+            ) {
+                sources {
+                    source(".")
+                }
+                packages {
+                    packageEntries.each { packageEntry ->
+                        delegate."package"(name: packageEntry.name, 'line-rate': packageEntry.lineRate, 'branch-rate': "1.0", complexity: "0.0") {
+                            classes {
+                                packageEntry.classes.each { packageClass ->
+                                    delegate."class"(
+                                            name: packageClass.name,
+                                            filename: packageClass.filename,
+                                            'line-rate': packageClass.lineRate,
+                                            'branch-rate': "1.0",
+                                            complexity: "0.0"
+                                    ) {
+                                        methods()
+                                        lines {
+                                            packageClass.lines.each { lineEntry ->
+                                                line(number: lineEntry.number, hits: lineEntry.hits, branch: "false")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
