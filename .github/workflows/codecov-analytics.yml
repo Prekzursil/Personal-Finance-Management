@@ -1,36 +1,27 @@
 name: Codecov Analytics
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
-  pull_request:
-    branches: [main, master]
   push:
+    branches: [main, master]
+  pull_request:
     branches: [main, master]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
-  codecov-analytics:
-    name: Codecov Analytics
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v3
-      - uses: android-actions/setup-android@v3
-      - name: Generate JaCoCo report
-        run: chmod +x gradlew || true; ./gradlew test jacocoTestReport
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5
-        with:
-          files: app/build/reports/jacoco/test/jacocoTestReport.xml
-          disable_search: true
-          fail_ci_if_error: true
-          verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+  shared-codecov-analytics:
+    permissions:
+      contents: read
+      id-token: write
+    uses: Prekzursil/quality-zero-platform/.github/workflows/reusable-codecov-analytics.yml@2be048255a27d55eb7be18b82091b57f29d34ee6
+    with:
+      repo_slug: ${{ github.repository }}
+      event_name: ${{ github.event_name }}
+      sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      platform_repository: Prekzursil/quality-zero-platform
+      platform_ref: 2be048255a27d55eb7be18b82091b57f29d34ee6
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
