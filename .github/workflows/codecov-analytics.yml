@@ -1,0 +1,36 @@
+name: Codecov Analytics
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codecov-analytics:
+    name: Codecov Analytics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v3
+      - uses: android-actions/setup-android@v3
+      - name: Generate JaCoCo report
+        run: chmod +x gradlew || true; ./gradlew test jacocoTestReport
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: app/build/reports/jacoco/test/jacocoTestReport.xml
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
