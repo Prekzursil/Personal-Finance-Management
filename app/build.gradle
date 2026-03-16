@@ -95,6 +95,9 @@ dependencies {
 tasks.register("jacocoTestReport", JacocoReport) {
     dependsOn("testDebugUnitTest")
 
+    def jacocoXmlReport = file("${buildDir}/reports/jacoco/test/jacocoTestReport-jacoco.xml")
+    def coberturaXmlReport = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+
     def coverageExclusions = [
             '**/R.class',
             '**/R$*.class',
@@ -128,9 +131,111 @@ tasks.register("jacocoTestReport", JacocoReport) {
 
     reports {
         xml.required = true
-        xml.outputLocation = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+        xml.outputLocation = jacocoXmlReport
         html.required = true
         html.outputLocation = file("${buildDir}/reports/jacoco/html")
         csv.required = false
+    }
+
+    doLast {
+        if (!jacocoXmlReport.exists()) {
+            throw new GradleException("JaCoCo XML report was not generated at ${jacocoXmlReport}")
+        }
+
+        def report = new XmlSlurper().parse(jacocoXmlReport)
+        def packageEntries = []
+        int totalLinesValid = 0
+        int totalLinesCovered = 0
+
+        report.package.each { pkg ->
+            def packageName = pkg.@name.text()
+            def packageClasses = []
+            int packageLinesValid = 0
+            int packageLinesCovered = 0
+
+            pkg.sourcefile.each { sourceFile ->
+                def sourceFileName = sourceFile.@name.text()
+                def relativePathParts = ["app", "src", "main", "java"]
+                if (packageName) {
+                    relativePathParts += packageName.split("/") as List
+                }
+                relativePathParts << sourceFileName
+                def relativePath = relativePathParts.join("/")
+
+                def lineEntries = sourceFile.line.collect { line ->
+                    def hits = (line.@ci.text() ?: "0") as Integer
+                    [
+                            number: (line.@nr.text() ?: "0") as Integer,
+                            hits  : hits > 0 ? hits : 0,
+                    ]
+                }
+
+                int sourceLinesValid = lineEntries.size()
+                int sourceLinesCovered = lineEntries.count { it.hits > 0 }
+                packageLinesValid += sourceLinesValid
+                packageLinesCovered += sourceLinesCovered
+
+                packageClasses << [
+                        name        : sourceFileName.replace(".java", ""),
+                        filename    : relativePath,
+                        lineRate    : sourceLinesValid == 0 ? "1.0" : String.format(java.util.Locale.ROOT, "%.4f", sourceLinesCovered / (double) sourceLinesValid),
+                        lines       : lineEntries,
+                ]
+            }
+
+            totalLinesValid += packageLinesValid
+            totalLinesCovered += packageLinesCovered
+
+            packageEntries << [
+                    name        : packageName.replace("/", "."),
+                    lineRate    : packageLinesValid == 0 ? "1.0" : String.format(java.util.Locale.ROOT, "%.4f", packageLinesCovered / (double) packageLinesValid),
+                    classes     : packageClasses,
+            ]
+        }
+
+        coberturaXmlReport.parentFile.mkdirs()
+        coberturaXmlReport.withWriter("UTF-8") { writer ->
+            def xml = new groovy.xml.MarkupBuilder(writer)
+            xml.mkp.xmlDeclaration(version: "1.0", encoding: "UTF-8")
+            xml.coverage(
+                    'line-rate': totalLinesValid == 0 ? "1.0" : String.format(java.util.Locale.ROOT, "%.4f", totalLinesCovered / (double) totalLinesValid),
+                    'branch-rate': "1.0",
+                    'lines-covered': totalLinesCovered,
+                    'lines-valid': totalLinesValid,
+                    'branches-covered': "0",
+                    'branches-valid': "0",
+                    'complexity': "0.0",
+                    'version': "1.9",
+                    'timestamp': (System.currentTimeMillis() / 1000L).toString()
+            ) {
+                sources {
+                    source("app/src/main/java")
+                }
+                packages {
+                    packageEntries.each { packageEntry ->
+                        delegate."package"(name: packageEntry.name, 'line-rate': packageEntry.lineRate, 'branch-rate': "1.0", complexity: "0.0") {
+                            classes {
+                                packageEntry.classes.each { packageClass ->
+                                    delegate."class"(
+                                            name: packageClass.name,
+                                            filename: packageClass.filename,
+                                            'line-rate': packageClass.lineRate,
+                                            'branch-rate': "1.0",
+                                            complexity: "0.0"
+                                    ) {
+                                        methods()
+                                        lines {
+                                            packageClass.lines.each { lineEntry ->
+                                                line(number: lineEntry.number, hits: lineEntry.hits, branch: "false")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
