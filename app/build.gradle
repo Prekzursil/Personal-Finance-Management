@@ -142,7 +142,8 @@ tasks.register("jacocoTestReport", JacocoReport) {
             throw new GradleException("JaCoCo XML report was not generated at ${jacocoXmlReport}")
         }
 
-        def report = new XmlSlurper(false, false, true).parse(jacocoXmlReport)
+        def sanitizedJacocoXml = jacocoXmlReport.getText("UTF-8").replaceFirst(/<!DOCTYPE[^>]*>/, "")
+        def report = new XmlSlurper(false, false).parseText(sanitizedJacocoXml)
         def packageEntries = []
         int totalLinesValid = 0
         int totalLinesCovered = 0
