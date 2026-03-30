@@ -1,0 +1,42 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: /
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  groups:
+    gradle-root-patch-minor:
+      patterns:
+      - '*'
+      update-types:
+      - patch
+      - minor
+  ignore:
+  - dependency-name: '*'
+    update-types:
+    - version-update:semver-major
+  labels:
+  - dependencies
+  - type:chore
+  - area:ci
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  groups:
+    github-actions-root-patch-minor:
+      patterns:
+      - '*'
+      update-types:
+      - patch
+      - minor
+  ignore:
+  - dependency-name: '*'
+    update-types:
+    - version-update:semver-major
+  labels:
+  - dependencies
+  - type:chore
+  - area:ci
