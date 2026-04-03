@@ -1,0 +1,278 @@
+# Instincts generated from https://github.com/Prekzursil/Personal-Finance-Management
+# Generated: 2026-04-03T08:18:47.780Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: Personal-Finance-Management-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Commit Length
+
+## Action
+
+Write moderate-length commit messages (~54 characters)
+
+## Evidence
+
+- Average commit message length: 54 chars
+- Based on 1 commits
+
+---
+id: Personal-Finance-Management-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: Personal-Finance-Management-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: Personal-Finance-Management-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: Personal-Finance-Management-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: personal-finance-management-instinct-file-naming
+trigger: "When creating a new file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct File Naming
+
+## Action
+
+Name the file using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.files
+
+---
+id: personal-finance-management-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Function Naming
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: personal-finance-management-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Class Naming
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: personal-finance-management-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: personal-finance-management-instinct-import-style
+trigger: "When importing modules"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Import Style
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in importStyle
+
+---
+id: personal-finance-management-instinct-export-style
+trigger: "When exporting functions or classes"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle
+
+---
+id: personal-finance-management-instinct-test-location
+trigger: "When adding new tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Test Location
+
+## Action
+
+Place tests in a separate test folder
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation
+
+---
+id: personal-finance-management-instinct-commit-format
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Commit Format
+
+## Action
+
+Write freeform commit messages without a prefix
+
+## Evidence
+
+- Pattern in commits.prefixes
+- Example: 'Bump the gradle-root-patch-minor group with 20 updates'
+
+---
+id: personal-finance-management-instinct-commit-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Commit Length
+
+## Action
+
+Keep commit messages concise (around 54 characters on average)
+
+## Evidence
+
+- Pattern in commits.averageLength
+
