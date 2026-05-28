@@ -199,126 +199,110 @@ public class Download extends BaseActivity {
     }
 
     private void createPdf(String startDate, String endDate) throws IOException, DocumentException {
-        String reportTitle;
-        SimpleDateFormat inputDbFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        SimpleDateFormat outputDisplayFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-        if (startDate != null && endDate != null) {
-            try {
-                Date parsedStartDate = inputDbFormat.parse(startDate);
-                Date parsedEndDate = inputDbFormat.parse(endDate);
-                String startDateFormatted = parsedStartDate != null ? outputDisplayFormat.format(parsedStartDate) : startDate.substring(0,10);
-                String endDateFormatted = parsedEndDate != null ? outputDisplayFormat.format(parsedEndDate) : endDate.substring(0,10);
-                reportTitle = String.format(context.getString(R.string.pdf_title_transactions_for_user_custom_range), Utils.userName, startDateFormatted, endDateFormatted);
-            } catch (Exception e) {
-                 reportTitle = String.format(context.getString(R.string.pdf_title_transactions_for_user), Utils.userName); // Fallback to generic title
-            }
-        } else {
-            reportTitle = String.format(context.getString(R.string.pdf_title_transactions_for_user_all_time), Utils.userName);
-        }
-
+        String reportTitle = buildReportTitle(startDate, endDate);
         String generatedByString = String.format(context.getString(R.string.pdf_generated_by), context.getString(R.string.app_name));
         String generatedOnString = context.getString(R.string.pdf_generated_on) + " " + new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
 
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, pdfname);
-            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS);
-
-            ContentResolver resolver = getContentResolver();
-            Uri pdfUri = resolver.insert(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), contentValues);
-
-            if (pdfUri != null) {
-                try (OutputStream outputStream = resolver.openOutputStream(pdfUri)) {
-                    if (outputStream == null) {
-                        throw new IOException("Failed to get output stream for MediaStore URI.");
-                    }
-                    Document document = new Document(PageSize.A4);
-                    PdfWriter.getInstance(document, outputStream);
-                    document.open();
-                    Font titleFont = new Font(Font.FontFamily.HELVETICA, 24.0f, Font.UNDERLINE | Font.BOLD, BaseColor.BLUE);
-                    document.add(new Paragraph(reportTitle + "\n\n", titleFont));
-                    document.add(new Paragraph(generatedByString + "\n" + generatedOnString + "\n\n"));
-
-                    PdfPTable table = new PdfPTable(new float[]{3, 3, 3, 3});
-                    table.setWidthPercentage(100);
-                    table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
-                    table.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
-                    table.getDefaultCell().setFixedHeight(40); 
-                    table.addCell(context.getString(R.string.pdf_header_tag));
-                    table.addCell(context.getString(R.string.pdf_header_amount));
-                    table.addCell(context.getString(R.string.pdf_header_date));
-                    table.addCell(context.getString(R.string.pdf_header_type));
-                    table.setHeaderRows(1);
-
-                    list = databaseHelper.getTransactionsPDF(startDate, endDate);
-                    if (list.isEmpty()) {
-                        document.add(new Paragraph(context.getString(R.string.pdf_no_transactions_for_period)));
-                    } else {
-                        for (Transactions t : list) {
-                            table.addCell(t.getTag());
-                            table.addCell(String.valueOf(t.getAmount()));
-                            table.addCell(t.getCreated_at());
-                            table.addCell(t.getExin() == 0 ? context.getString(R.string.pdf_type_expense) : context.getString(R.string.pdf_type_income));
-                        }
-                        document.add(table);
-                    }
-                    document.close();
-                }
-            } else {
-                 throw new IOException("Failed to create new MediaStore entry.");
-            }
+            writePdfToMediaStore(reportTitle, generatedByString, generatedOnString, startDate, endDate);
         } else {
-            // For Android 9 and below
-            File docsFolder = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOCUMENTS);
-            if (!docsFolder.exists()) {
-                if (!docsFolder.mkdirs()) {
-                     Log.e(TAG, "Failed to create directory for PDF on older Android.");
-                     throw new IOException("Failed to create directory for PDF on older Android.");
-                }
-            }
-            pdfFile = new File(docsFolder, pdfname);
-
-            try (OutputStream output = new FileOutputStream(pdfFile)) {
-                Document document = new Document(PageSize.A4);
-                PdfWriter.getInstance(document, output);
-                document.open();
-                Font titleFont = new Font(Font.FontFamily.HELVETICA, 24.0f, Font.UNDERLINE | Font.BOLD, BaseColor.BLUE);
-                document.add(new Paragraph(reportTitle + "\n\n", titleFont));
-                document.add(new Paragraph(generatedByString + "\n" + generatedOnString + "\n\n"));
-
-                PdfPTable table = new PdfPTable(new float[]{3, 3, 3, 3});
-                table.setWidthPercentage(100);
-                table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
-                table.getDefaultCell().setFixedHeight(40);
-                table.addCell(context.getString(R.string.pdf_header_tag));
-                table.addCell(context.getString(R.string.pdf_header_amount));
-                table.addCell(context.getString(R.string.pdf_header_date));
-                table.addCell(context.getString(R.string.pdf_header_type));
-                table.setHeaderRows(1);
-
-                list = databaseHelper.getTransactionsPDF(startDate, endDate);
-                if (list.isEmpty()) {
-                    document.add(new Paragraph(context.getString(R.string.pdf_no_transactions_for_period)));
-                } else {
-                    for (Transactions t : list) {
-                        table.addCell(t.getTag());
-                        table.addCell(String.valueOf(t.getAmount()));
-                        table.addCell(t.getCreated_at());
-                        table.addCell(t.getExin() == 0 ? context.getString(R.string.pdf_type_expense) : context.getString(R.string.pdf_type_income));
-                    }
-                    document.add(table);
-                }
-                document.close();
-            }
-            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            Uri contentUri = Uri.fromFile(pdfFile);
-            mediaScanIntent.setData(contentUri);
-            this.sendBroadcast(mediaScanIntent);
+            writePdfToLegacyStorage(reportTitle, generatedByString, generatedOnString, startDate, endDate);
         }
+    }
+
+    // Builds the localized report title for the (optional) date range.
+    private String buildReportTitle(String startDate, String endDate) {
+        if (startDate == null || endDate == null) {
+            return String.format(context.getString(R.string.pdf_title_transactions_for_user_all_time), Utils.userName);
+        }
+        SimpleDateFormat inputDbFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat outputDisplayFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        try {
+            Date parsedStartDate = inputDbFormat.parse(startDate);
+            Date parsedEndDate = inputDbFormat.parse(endDate);
+            String startDateFormatted = parsedStartDate != null ? outputDisplayFormat.format(parsedStartDate) : startDate.substring(0, 10);
+            String endDateFormatted = parsedEndDate != null ? outputDisplayFormat.format(parsedEndDate) : endDate.substring(0, 10);
+            return String.format(context.getString(R.string.pdf_title_transactions_for_user_custom_range), Utils.userName, startDateFormatted, endDateFormatted);
+        } catch (Exception e) {
+            return String.format(context.getString(R.string.pdf_title_transactions_for_user), Utils.userName); // Fallback to generic title
+        }
+    }
+
+    // Android 10+: write the PDF through MediaStore.
+    private void writePdfToMediaStore(String reportTitle, String generatedByString,
+            String generatedOnString, String startDate, String endDate)
+            throws IOException, DocumentException {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, pdfname);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS);
+
+        ContentResolver resolver = getContentResolver();
+        Uri pdfUri = resolver.insert(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), contentValues);
+        if (pdfUri == null) {
+            throw new IOException("Failed to create new MediaStore entry.");
+        }
+        try (OutputStream outputStream = resolver.openOutputStream(pdfUri)) {
+            if (outputStream == null) {
+                throw new IOException("Failed to get output stream for MediaStore URI.");
+            }
+            writePdfDocument(outputStream, reportTitle, generatedByString, generatedOnString, startDate, endDate);
+        }
+    }
+
+    // Android 9 and below: write the PDF to external Documents storage.
+    private void writePdfToLegacyStorage(String reportTitle, String generatedByString,
+            String generatedOnString, String startDate, String endDate)
+            throws IOException, DocumentException {
+        File docsFolder = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOCUMENTS);
+        if (!docsFolder.exists() && !docsFolder.mkdirs()) {
+            Log.e(TAG, "Failed to create directory for PDF on older Android.");
+            throw new IOException("Failed to create directory for PDF on older Android.");
+        }
+        pdfFile = new File(docsFolder, pdfname);
+        try (OutputStream output = new FileOutputStream(pdfFile)) {
+            writePdfDocument(output, reportTitle, generatedByString, generatedOnString, startDate, endDate);
+        }
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        mediaScanIntent.setData(Uri.fromFile(pdfFile));
+        this.sendBroadcast(mediaScanIntent);
+    }
+
+    // Shared iText document construction used by both storage strategies.
+    private void writePdfDocument(OutputStream outputStream, String reportTitle,
+            String generatedByString, String generatedOnString, String startDate, String endDate)
+            throws DocumentException {
+        Document document = new Document(PageSize.A4);
+        PdfWriter.getInstance(document, outputStream);
+        document.open();
+        Font titleFont = new Font(Font.FontFamily.HELVETICA, 24.0f, Font.UNDERLINE | Font.BOLD, BaseColor.BLUE);
+        document.add(new Paragraph(reportTitle + "\n\n", titleFont));
+        document.add(new Paragraph(generatedByString + "\n" + generatedOnString + "\n\n"));
+
+        PdfPTable table = new PdfPTable(new float[]{3, 3, 3, 3});
+        table.setWidthPercentage(100);
+        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
+        table.getDefaultCell().setFixedHeight(40);
+        table.addCell(context.getString(R.string.pdf_header_tag));
+        table.addCell(context.getString(R.string.pdf_header_amount));
+        table.addCell(context.getString(R.string.pdf_header_date));
+        table.addCell(context.getString(R.string.pdf_header_type));
+        table.setHeaderRows(1);
+
+        list = databaseHelper.getTransactionsPDF(startDate, endDate);
+        if (list.isEmpty()) {
+            document.add(new Paragraph(context.getString(R.string.pdf_no_transactions_for_period)));
+        } else {
+            for (Transactions t : list) {
+                table.addCell(t.getTag());
+                table.addCell(String.valueOf(t.getAmount()));
+                table.addCell(t.getCreated_at());
+                table.addCell(t.getExin() == 0 ? context.getString(R.string.pdf_type_expense) : context.getString(R.string.pdf_type_income));
+            }
+            document.add(table);
+        }
+        document.close();
     }
 
     @Override

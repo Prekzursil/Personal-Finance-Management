@@ -189,7 +189,7 @@ public class AddReminderActivity extends BaseActivity {
         String dateText = dateRemEditText.getText().toString().trim();
         String timeText = timeRemEditText.getText().toString().trim();
 
-        if (message.isEmpty() || dateText.isEmpty() || timeText.isEmpty()) {
+        if (!ReminderInput.allPresent(message, dateText, timeText)) {
             Toast.makeText(this, R.string.error_empty_reminder_fields, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -205,43 +205,7 @@ public class AddReminderActivity extends BaseActivity {
                 return;
             }
 
-            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-            String alertAt = dbFormat.format(reminderDateTime);
-
-            AlertsTable alert = new AlertsTable();
-            try {
-                alert.setUid(Integer.parseInt(Utils.userId));
-            } catch (NumberFormatException nfe) {
-                Toast.makeText(this, R.string.error_invalid_user_id, Toast.LENGTH_SHORT).show();
-                nfe.printStackTrace();
-                return;
-            }
-            alert.setMessage(message);
-            alert.setalert_at(alertAt);
-
-            if (currentReminderId != -1) { // Edit mode
-                alert.setAid(currentReminderId);
-                int rowsAffected = databaseHelper.updateReminder(alert);
-                if (rowsAffected > 0) {
-                    cancelAlarm(currentReminderId); // Cancel old alarm
-                    scheduleAlarm(message, triggerAtMillis, currentReminderId); // Schedule new/updated alarm
-                    Toast.makeText(this, "Reminder updated.", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Error updating reminder.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            } else { // Add mode
-                long newAlertId = databaseHelper.insertRemainder(alert);
-                if (newAlertId == -1) {
-                    Toast.makeText(this, R.string.error_saving_reminder, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                scheduleAlarm(message, triggerAtMillis, (int) newAlertId);
-                Toast.makeText(this, R.string.reminder_set_success, Toast.LENGTH_SHORT).show();
-            }
-
-            startActivity(new Intent(getApplicationContext(), AlertsActivity.class));
-            finish();
+            persistReminder(message, reminderDateTime, triggerAtMillis);
 
         } catch (ParseException e) {
             Toast.makeText(this, R.string.error_invalid_datetime_format, Toast.LENGTH_SHORT).show();
@@ -250,6 +214,63 @@ public class AddReminderActivity extends BaseActivity {
             Toast.makeText(this, R.string.error_scheduling_reminder, Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+    }
+
+    // Builds, persists and schedules the reminder, then navigates back on success.
+    private void persistReminder(String message, java.util.Date reminderDateTime, long triggerAtMillis) {
+        AlertsTable alert = buildAlert(message, reminderDateTime);
+        if (alert == null) {
+            return; // invalid user id; message already shown
+        }
+        boolean persisted = (currentReminderId != -1)
+                ? applyEdit(alert, message, triggerAtMillis)
+                : applyAdd(alert, message, triggerAtMillis);
+        if (!persisted) {
+            return; // persistence failed; message already shown
+        }
+        startActivity(new Intent(getApplicationContext(), AlertsActivity.class));
+        finish();
+    }
+
+    // Builds the alert row, or null (after toasting) when the user id is invalid.
+    private AlertsTable buildAlert(String message, java.util.Date reminderDateTime) {
+        AlertsTable alert = new AlertsTable();
+        try {
+            alert.setUid(Integer.parseInt(Utils.userId));
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, R.string.error_invalid_user_id, Toast.LENGTH_SHORT).show();
+            nfe.printStackTrace();
+            return null;
+        }
+        SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        alert.setMessage(message);
+        alert.setalert_at(dbFormat.format(reminderDateTime));
+        return alert;
+    }
+
+    // Updates an existing reminder and reschedules its alarm. Returns success.
+    private boolean applyEdit(AlertsTable alert, String message, long triggerAtMillis) {
+        alert.setAid(currentReminderId);
+        if (databaseHelper.updateReminder(alert) <= 0) {
+            Toast.makeText(this, "Error updating reminder.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        cancelAlarm(currentReminderId);
+        scheduleAlarm(message, triggerAtMillis, currentReminderId);
+        Toast.makeText(this, "Reminder updated.", Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    // Inserts a new reminder and schedules its alarm. Returns success.
+    private boolean applyAdd(AlertsTable alert, String message, long triggerAtMillis) {
+        long newAlertId = databaseHelper.insertRemainder(alert);
+        if (newAlertId == -1) {
+            Toast.makeText(this, R.string.error_saving_reminder, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        scheduleAlarm(message, triggerAtMillis, (int) newAlertId);
+        Toast.makeText(this, R.string.reminder_set_success, Toast.LENGTH_SHORT).show();
+        return true;
     }
 
     private void loadReminderData() {

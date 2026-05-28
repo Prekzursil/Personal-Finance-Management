@@ -105,38 +105,7 @@ public class Dashboard extends BaseActivity {
         setContentView(R.layout.activity_dashboard);
 
         /* ---------- Google-Drive backup bootstrap ---------- */
-        if (getIntent().hasExtra("google_account")) {
-            GoogleSignInAccount account =
-                getIntent().getParcelableExtra("google_account");
-            backupManager = new BackupManager(this, account);
-
-            showProgressDialog("Initializing backup...");
-            backupManager.performSync(true)
-                .addOnSuccessListener(result -> {
-                    hideProgressDialog();
-                    Toast.makeText(this,
-                        "Initial sync completed", Toast.LENGTH_SHORT).show();
-                    refreshData(currentFilterStartDate, currentFilterEndDate);
-                })
-                .addOnFailureListener(e -> {
-                    hideProgressDialog();
-                    Toast.makeText(this,
-                        "Initial sync failed: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-                });
-
-        } else {
-            GoogleSignInAccount account =
-                GoogleSignIn.getLastSignedInAccount(this);
-            if (account != null) {
-                backupManager = new BackupManager(this, account);
-                backupManager.performSync(false)
-                    .addOnSuccessListener(r -> refreshData(currentFilterStartDate, currentFilterEndDate))
-                    .addOnFailureListener(e ->
-                        Log.e("Dashboard",
-                            "Background sync failed: " + e.getMessage()));
-            }
-        }
+        bootstrapBackup();
 
         /* ---------- UI wiring ---------- */
         income   = findViewById(R.id.income);
@@ -220,36 +189,69 @@ public class Dashboard extends BaseActivity {
         });
 
         // Updated to use IDs from included layout
+        setupNavBar();
+
+        // refreshData will call getTList and getTChart
+    }
+
+    // Initializes Drive backup from an explicit account extra or the last sign-in.
+    private void bootstrapBackup() {
+        if (getIntent().hasExtra("google_account")) {
+            GoogleSignInAccount account = getIntent().getParcelableExtra("google_account");
+            backupManager = new BackupManager(this, account);
+            showProgressDialog("Initializing backup...");
+            backupManager.performSync(true)
+                .addOnSuccessListener(result -> {
+                    hideProgressDialog();
+                    Toast.makeText(this, "Initial sync completed", Toast.LENGTH_SHORT).show();
+                    refreshData(currentFilterStartDate, currentFilterEndDate);
+                })
+                .addOnFailureListener(e -> {
+                    hideProgressDialog();
+                    Toast.makeText(this, "Initial sync failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            return;
+        }
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (account != null) {
+            backupManager = new BackupManager(this, account);
+            backupManager.performSync(false)
+                .addOnSuccessListener(r -> refreshData(currentFilterStartDate, currentFilterEndDate))
+                .addOnFailureListener(e -> Log.e("Dashboard", "Background sync failed: " + e.getMessage()));
+        }
+    }
+
+    // Colors the top nav tabs and wires their click targets.
+    private void setupNavBar() {
         View topNavBar = findViewById(R.id.top_navigation_bar);
         TextView homeTab    = topNavBar.findViewById(R.id.nav_home_text);
         TextView optionsTab = topNavBar.findViewById(R.id.nav_options_text);
         TextView alertsTab  = topNavBar.findViewById(R.id.nav_alerts_text);
 
-        // Set active/inactive tab colors
-        if (homeTab != null) homeTab.setTextColor(ContextCompat.getColor(this, R.color.secondary)); // Active tab
-        if (optionsTab != null) optionsTab.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Inactive
-        if (alertsTab != null) alertsTab.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Inactive
+        setTabColor(homeTab, R.color.secondary); // Active tab
+        setTabColor(optionsTab, R.color.text_primary); // Inactive
+        setTabColor(alertsTab, R.color.text_primary); // Inactive
 
-        if (homeTab != null) {
-            homeTab.setOnClickListener(v -> {
-                // Already on Dashboard, no action or refresh if desired
-                // For now, no action.
-            });
-        }
-        if (optionsTab != null) {
-            optionsTab.setOnClickListener(v -> {
-                startActivity(new Intent(this, SettingsActivity.class));
-                // Do not finish Dashboard
-            });
-        }
-        if (alertsTab != null) {
-            alertsTab.setOnClickListener(v -> {
-                startActivity(new Intent(this, AlertsActivity.class));
-                // Do not finish Dashboard
-            });
-        }
+        setTabTarget(homeTab, null); // Already on Dashboard: no navigation
+        setTabTarget(optionsTab, SettingsActivity.class);
+        setTabTarget(alertsTab, AlertsActivity.class);
+    }
 
-        // refreshData will call getTList and getTChart
+    private void setTabColor(TextView tab, int colorRes) {
+        if (tab != null) {
+            tab.setTextColor(ContextCompat.getColor(this, colorRes));
+        }
+    }
+
+    private void setTabTarget(TextView tab, Class<?> target) {
+        if (tab == null) {
+            return;
+        }
+        tab.setOnClickListener(v -> {
+            if (target != null) {
+                startActivity(new Intent(this, target));
+            }
+        });
     }
 
 
@@ -506,30 +508,9 @@ public class Dashboard extends BaseActivity {
             return;
         }
 
-        float total = Utils.expense + Utils.income; // Calculate total for percentage
         List<PieEntry> values = new ArrayList<>();
         List<Integer> sliceColors = new ArrayList<>(); // Use a specific list for colors
-        // Define colors (e.g., Red for Expense, Green for Income)
-        int expenseColor = ContextCompat.getColor(this, R.color.expense_color); // Use defined color
-        int incomeColor = ContextCompat.getColor(this, R.color.income_color); // Use defined color
-
-        // Add Expense Entry
-        if (Utils.expense > 0) {
-            float expensePercent = (Utils.expense / total) * 100f;
-            PieEntry expenseEntry = new PieEntry(expensePercent, getString(R.string.title_expenses));
-            expenseEntry.setData(expenseColor); // Store color in data
-            values.add(expenseEntry);
-            sliceColors.add(expenseColor);
-        }
-
-        // Add Income Entry
-        if (Utils.income > 0) {
-            float incomePercent = (Utils.income / total) * 100f;
-            PieEntry incomeEntry = new PieEntry(incomePercent, getString(R.string.title_income));
-            incomeEntry.setData(incomeColor); // Store color in data
-            values.add(incomeEntry);
-            sliceColors.add(incomeColor);
-        }
+        buildPieEntries(values, sliceColors);
 
 
         // ----- pie‑chart polish -----
@@ -558,64 +539,98 @@ public class Dashboard extends BaseActivity {
 
 
         // Setup RecyclerView legend for Dashboard
-        // Ensure adapter is initialized or updated correctly
-        if (legendAdapterDashboard == null) {
-            legendAdapterDashboard = new LegendAdapter(new ArrayList<>(values), position -> {
-                // Find the actual index in the chart data corresponding to the legend item
-                // This is needed because the legend might have fewer items if income or expense is zero
-                if (values.size() > position) {
-                    PieEntry clickedEntry = values.get(position);
-                    // Find the index of this entry in the *original* dataset used by the chart
-                    int chartIndex = -1;
-                    // Correct way to iterate through dataset entries
-                    com.github.mikephil.charting.interfaces.datasets.IPieDataSet dataSet = data.getDataSet();
-                    for (int i = 0; i < dataSet.getEntryCount(); i++) {
-                        if (dataSet.getEntryForIndex(i).getLabel().equals(clickedEntry.getLabel())) {
-                            chartIndex = i;
-                            break;
-                        }
-                    }
-                    if (chartIndex != -1) {
-                         pieChart.highlightValue(chartIndex, 0); // Highlight slice in chart
-                    }
-                }
-                 legendAdapterDashboard.setSelectedPosition(position); // Highlight legend item
-            });
-            legendRecyclerDashboard.setLayoutManager(new FlexboxLayoutManager(this, FlexDirection.ROW, FlexWrap.WRAP));
-            legendRecyclerDashboard.setAdapter(legendAdapterDashboard);
-        }
+        setupLegendAdapter(values, data);
         legendAdapterDashboard.submitList(new ArrayList<>(values)); // Update legend data
 
-
         // Add OnChartValueSelectedListener to Dashboard's pieChart for bi-directional highlight
+        attachChartSelectionListener();
+    }
+
+    // Builds the expense/income pie entries (and their colors) from current totals.
+    private void buildPieEntries(List<PieEntry> values, List<Integer> sliceColors) {
+        float total = Utils.expense + Utils.income; // Calculate total for percentage
+        int expenseColor = ContextCompat.getColor(this, R.color.expense_color);
+        int incomeColor = ContextCompat.getColor(this, R.color.income_color);
+        if (Utils.expense > 0) {
+            PieEntry expenseEntry = new PieEntry((Utils.expense / total) * 100f, getString(R.string.title_expenses));
+            expenseEntry.setData(expenseColor); // Store color in data
+            values.add(expenseEntry);
+            sliceColors.add(expenseColor);
+        }
+        if (Utils.income > 0) {
+            PieEntry incomeEntry = new PieEntry((Utils.income / total) * 100f, getString(R.string.title_income));
+            incomeEntry.setData(incomeColor); // Store color in data
+            values.add(incomeEntry);
+            sliceColors.add(incomeColor);
+        }
+    }
+
+    // Lazily creates the legend adapter, wiring chip clicks to chart highlights.
+    private void setupLegendAdapter(List<PieEntry> values, PieData data) {
+        if (legendAdapterDashboard != null) {
+            return;
+        }
+        legendAdapterDashboard = new LegendAdapter(new ArrayList<>(values), position -> {
+            highlightChartForLegend(values, data, position);
+            legendAdapterDashboard.setSelectedPosition(position); // Highlight legend item
+        });
+        legendRecyclerDashboard.setLayoutManager(new FlexboxLayoutManager(this, FlexDirection.ROW, FlexWrap.WRAP));
+        legendRecyclerDashboard.setAdapter(legendAdapterDashboard);
+    }
+
+    // Highlights the chart slice matching the tapped legend chip.
+    private void highlightChartForLegend(List<PieEntry> values, PieData data, int position) {
+        if (values.size() <= position) {
+            return;
+        }
+        String label = values.get(position).getLabel();
+        int chartIndex = indexOfLabel(data.getDataSet(), label);
+        if (chartIndex != -1) {
+            pieChart.highlightValue(chartIndex, 0); // Highlight slice in chart
+        }
+    }
+
+    private static int indexOfLabel(
+            com.github.mikephil.charting.interfaces.datasets.IPieDataSet dataSet, String label) {
+        for (int i = 0; i < dataSet.getEntryCount(); i++) {
+            if (dataSet.getEntryForIndex(i).getLabel().equals(label)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // Wires chart slice selection back to the legend for bi-directional highlight.
+    private void attachChartSelectionListener() {
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                if (legendAdapterDashboard != null && h != null && e instanceof PieEntry) {
-                    // Find the corresponding item in the legend's list
-                    PieEntry selectedEntry = (PieEntry) e;
-                    List<PieEntry> legendEntries = legendAdapterDashboard.getCurrentList();
-                    int legendPosition = -1;
-                    for (int i = 0; i < legendEntries.size(); i++) {
-                        if (legendEntries.get(i).getLabel().equals(selectedEntry.getLabel())) {
-                            legendPosition = i;
-                            break;
-                        }
-                    }
-                    if (legendPosition != -1) {
-                        legendAdapterDashboard.setSelectedPosition(legendPosition);
-                        // Optional: Scroll RecyclerView to make the selected chip visible
-                        legendRecyclerDashboard.smoothScrollToPosition(legendPosition);
-                    }
+                if (legendAdapterDashboard == null || h == null || !(e instanceof PieEntry)) {
+                    return;
+                }
+                List<PieEntry> legendEntries = legendAdapterDashboard.getCurrentList();
+                int legendPosition = indexOfLabelInList(legendEntries, ((PieEntry) e).getLabel());
+                if (legendPosition != -1) {
+                    legendAdapterDashboard.setSelectedPosition(legendPosition);
+                    legendRecyclerDashboard.smoothScrollToPosition(legendPosition);
                 }
             }
 
-             @Override
+            @Override
             public void onNothingSelected() {
                 if (legendAdapterDashboard != null) {
                     legendAdapterDashboard.clearSelection();
                 }
             }
         });
+    }
+
+    private static int indexOfLabelInList(List<PieEntry> entries, String label) {
+        for (int i = 0; i < entries.size(); i++) {
+            if (entries.get(i).getLabel().equals(label)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

@@ -42,7 +42,6 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import android.media.Image;
 // Other necessary imports
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import android.view.MotionEvent;
@@ -160,215 +159,114 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         imageCaptureUseCase.takePicture(cameraExecutor, new ImageCapture.OnImageCapturedCallback() {
             @Override
             public void onCaptureSuccess(@NonNull ImageProxy imageProxy) {
-                final Bitmap originalBitmapFromProxy = imageProxyToBitmap(imageProxy); // This is effectively final
+                final Bitmap original = imageProxyToBitmap(imageProxy);
                 int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
-                imageProxy.close(); 
+                imageProxy.close();
 
-                if (originalBitmapFromProxy == null) {
+                if (original == null) {
                     Log.e(TAG, "Failed to convert ImageProxy to Bitmap.");
                     Toast.makeText(scanActivity.this, "Failed to process image.", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                Bitmap bitmapToFeedMLKit = originalBitmapFromProxy; // Start with the original
-                boolean wasCropped = false; // Flag to track if cropping occurred
-
-                RectF roiRectView = graphicOverlay.getRoiRectView();
-                Log.d(TAG, "ROI Debug: --- Start ---");
-                Log.d(TAG, "ROI Debug: ImageProxy rotationDegrees: " + rotationDegrees);
-                Log.d(TAG, "ROI Debug: Original Bitmap (from ImageProxy) Width: " + originalBitmapFromProxy.getWidth() + ", Height: " + originalBitmapFromProxy.getHeight());
-
-                if (roiRectView != null && graphicOverlay.getWidth() > 0 && graphicOverlay.getHeight() > 0 &&
-                    graphicOverlay.getSourceImageWidth() > 0 && graphicOverlay.getSourceImageHeight() > 0) {
-
-                    Log.d(TAG, "ROI Debug: roiRectView (View Coords): " + roiRectView.toString());
-                    Log.d(TAG, "ROI Debug: GraphicOverlay Width: " + graphicOverlay.getWidth() + ", Height: " + graphicOverlay.getHeight());
-                    Log.d(TAG, "ROI Debug: GraphicOverlay SourceImageWidth: " + graphicOverlay.getSourceImageWidth() + ", SourceImageHeight: " + graphicOverlay.getSourceImageHeight());
-                    Log.d(TAG, "ROI Debug: GraphicOverlay WidthScaleFactor: " + graphicOverlay.getWidthScaleFactor() + ", HeightScaleFactor: " + graphicOverlay.getHeightScaleFactor());
-                    Log.d(TAG, "ROI Debug: GraphicOverlay PostScaleWidthOffset: " + graphicOverlay.getPostScaleWidthOffset() + ", PostScaleHeightOffset: " + graphicOverlay.getPostScaleHeightOffset());
-
-                    // Dimensions of the source image as oriented for the GraphicOverlay
-                    float orientedSourceWidth = graphicOverlay.getSourceImageWidth(); 
-                    float orientedSourceHeight = graphicOverlay.getSourceImageHeight();
-
-                    // Scale factors from oriented source to view
-                    float overlayWidthScale = graphicOverlay.getWidthScaleFactor(); 
-                    float overlayHeightScale = graphicOverlay.getHeightScaleFactor();
-                    
-                    // Offsets in view
-                    float offsetXInView = graphicOverlay.getPostScaleWidthOffset(); 
-                    float offsetYInView = graphicOverlay.getPostScaleHeightOffset();
-
-                    float roiLeftInOrientedSource = (roiRectView.left - offsetXInView) / overlayWidthScale; 
-                    float roiTopInOrientedSource = (roiRectView.top - offsetYInView) / overlayHeightScale;
-                    float roiWidthInOrientedSource = roiRectView.width() / overlayWidthScale;
-                    float roiHeightInOrientedSource = roiRectView.height() / overlayHeightScale;
-
-                    Log.d(TAG, "ROI Debug: roiInOrientedSource - L: " + roiLeftInOrientedSource + ", T: " + roiTopInOrientedSource + ", W: " + roiWidthInOrientedSource + ", H: " + roiHeightInOrientedSource);
-
-                    int originalBitmapWidth = originalBitmapFromProxy.getWidth();
-                    int originalBitmapHeight = originalBitmapFromProxy.getHeight();
-                    int cropX, cropY, cropWidth, cropHeight;
-
-                    if (rotationDegrees == 90) {
-                        cropX = (int) roiTopInOrientedSource;
-                        cropY = (int) (originalBitmapHeight - (roiLeftInOrientedSource + roiWidthInOrientedSource));
-                        cropWidth = (int) roiHeightInOrientedSource;
-                        cropHeight = (int) roiWidthInOrientedSource;
-                        if(graphicOverlay.isImageFlipped()){ cropY = (int) roiLeftInOrientedSource; }
-                    } else if (rotationDegrees == 270) {
-                        cropX = (int) (originalBitmapWidth - (roiTopInOrientedSource + roiHeightInOrientedSource));
-                        cropY = (int) roiLeftInOrientedSource;
-                        cropWidth = (int) roiHeightInOrientedSource;
-                        cropHeight = (int) roiWidthInOrientedSource;
-                         if(graphicOverlay.isImageFlipped()){ cropY = (int) (originalBitmapHeight - (roiLeftInOrientedSource + roiWidthInOrientedSource));}
-                    } else if (rotationDegrees == 180) {
-                        cropX = (int) (originalBitmapWidth - (roiLeftInOrientedSource + roiWidthInOrientedSource));
-                        cropY = (int) (originalBitmapHeight - (roiTopInOrientedSource + roiHeightInOrientedSource));
-                        cropWidth = (int) roiWidthInOrientedSource;
-                        cropHeight = (int) roiHeightInOrientedSource;
-                         if(graphicOverlay.isImageFlipped()){ cropX = (int) roiLeftInOrientedSource; }
-                    } else { // 0 degrees
-                        cropX = (int) roiLeftInOrientedSource;
-                        cropY = (int) roiTopInOrientedSource;
-                        cropWidth = (int) roiWidthInOrientedSource;
-                        cropHeight = (int) roiHeightInOrientedSource;
-                        if(graphicOverlay.isImageFlipped()){ cropX = (int) (originalBitmapWidth - (roiLeftInOrientedSource + roiWidthInOrientedSource)); }
-                    }
-                    
-                    Log.d(TAG, "ROI Debug: Calculated Crop (Pre-Clamp) - X: " + cropX + ", Y: " + cropY + ", W: " + cropWidth + ", H: " + cropHeight);
-                    cropX = Math.max(0, cropX);
-                    cropY = Math.max(0, cropY);
-                    cropWidth = Math.min(originalBitmapWidth - cropX, cropWidth);
-                    cropHeight = Math.min(originalBitmapHeight - cropY, cropHeight);
-                    Log.d(TAG, "ROI Debug: Calculated Crop (Post-Clamp) - X: " + cropX + ", Y: " + cropY + ", W: " + cropWidth + ", H: " + cropHeight);
-
-                    if (cropWidth > 0 && cropHeight > 0) {
-                        try {
-                            Bitmap cropped = Bitmap.createBitmap(originalBitmapFromProxy, cropX, cropY, cropWidth, cropHeight);
-                            if (cropped != null) {
-                                bitmapToFeedMLKit = cropped; 
-                                wasCropped = true;
-                                Log.d(TAG, "Cropped bitmap to: " + cropWidth + "x" + cropHeight);
-                            } else {
-                                Log.e(TAG, "Bitmap.createBitmap returned null. Using original.");
-                            }
-                        } catch (IllegalArgumentException e) {
-                            Log.e(TAG, "Error creating cropped bitmap: " + e.getMessage(), e);
-                        }
-                    } else {
-                         Log.w(TAG, "Calculated crop dimensions are invalid or too small. Using original bitmap. W:"+cropWidth+" H:"+cropHeight);
-                    }
-                } else {
-                     Log.w(TAG, "ROI Rect or GraphicOverlay dimensions not ready for precise cropping. Using original bitmap.");
-                }
-                Log.d(TAG, "ROI Debug: --- End ---");
-
-                InputImage image = InputImage.fromBitmap(bitmapToFeedMLKit, rotationDegrees);
-                
-                // Create final references for the lambda
-                final Bitmap finalBitmapUsedByMLKit = bitmapToFeedMLKit;
-                final Bitmap finalOriginalBitmapForLambda = originalBitmapFromProxy; // The very first one
-                final boolean finalWasCropped = wasCropped;
-
-
-                mlkitRecognizer.process(image)
-                    .addOnSuccessListener(visionText -> {
-                        String fullTextOriginal = visionText.getText();
-                        mTextView.setText(fullTextOriginal.isEmpty() ? getString(R.string.no_text_available) : fullTextOriginal);
-                        String bestFoundAmount = "";
-                        double highestScore = -1.0;
-                        double maxNumericValue = -1.0;
-                        String[] keywords = getResources().getStringArray(R.array.ocr_amount_keywords);
-
-                        for (Text.TextBlock block : visionText.getTextBlocks()) {
-                            for (Text.Line line : block.getLines()) {
-                                String lineText = line.getText();
-                                String potentialAmount = extractAmountFromLine(lineText);
-                                if (!potentialAmount.isEmpty()) {
-                                    boolean keywordFound = false;
-                                    for (String keyword : keywords) {
-                                        if (lineText.toLowerCase(Locale.ROOT).contains(keyword.toLowerCase(Locale.ROOT))) {
-                                            keywordFound = true;
-                                            break;
-                                        }
-                                    }
-                                    try {
-                                        double numericValue = Double.parseDouble(potentialAmount);
-                                        if (keywordFound) {
-                                            if (numericValue > highestScore) {
-                                                highestScore = numericValue;
-                                                bestFoundAmount = potentialAmount;
-                                            }
-                                        } else if (highestScore == -1.0 && numericValue > maxNumericValue) {
-                                            maxNumericValue = numericValue;
-                                            if (bestFoundAmount.isEmpty() || Double.parseDouble(bestFoundAmount) < numericValue) {
-                                               bestFoundAmount = potentialAmount;
-                                            }
-                                        }
-                                    } catch (NumberFormatException e) { /* ignore */ }
-                                }
-                            }
-                        }
-                        if (highestScore == -1.0 && maxNumericValue != -1.0 && bestFoundAmount.isEmpty()) {
-                             bestFoundAmount = String.format(Locale.US, "%.2f", maxNumericValue).replaceFirst("\\.00$", "");
-                             if (bestFoundAmount.endsWith(".0")) bestFoundAmount = bestFoundAmount.substring(0, bestFoundAmount.length() -2);
-                        }
-                        mScannedAmountEditText.setText(bestFoundAmount);
-                        proceed.setEnabled(!bestFoundAmount.isEmpty());
-                        Log.d(TAG, "ML Kit OCR Success. Best Amount: " + bestFoundAmount);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "ML Kit OCR Failed: " + e.getMessage(), e);
-                        mTextView.setText("OCR Failed: " + e.getMessage());
-                        mScannedAmountEditText.setText("");
-                        proceed.setEnabled(false);
-                        Toast.makeText(scanActivity.this, "Text recognition failed.", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnCompleteListener(task -> {
-                        if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) {
-                            finalBitmapUsedByMLKit.recycle();
-                            Log.d(TAG, "Recycled cropped bitmap (finalBitmapUsedByMLKit).");
-                        }
-                        if (finalOriginalBitmapForLambda != null && !finalOriginalBitmapForLambda.isRecycled()) {
-                            // If it was cropped, original is different and needs recycling.
-                            // If not cropped, finalBitmapUsedByMLKit IS finalOriginalBitmapForLambda.
-                            // So, only recycle original if it's different from what was processed OR if it was processed and not cropped.
-                            if (finalWasCropped || (finalOriginalBitmapForLambda == finalBitmapUsedByMLKit && !finalBitmapUsedByMLKit.isRecycled())) {
-                                // Avoid double recycling if original was processed and already handled by finalBitmapUsedByMLKit logic
-                                if (finalOriginalBitmapForLambda != finalBitmapUsedByMLKit || !finalWasCropped) {
-                                     finalOriginalBitmapForLambda.recycle();
-                                     Log.d(TAG, "Recycled originalBitmapFromProxy.");
-                                }
-                            } else if (!finalWasCropped && finalOriginalBitmapForLambda == finalBitmapUsedByMLKit && !finalBitmapUsedByMLKit.isRecycled()){
-                                // This case should be covered by the above, but for clarity:
-                                // if original was used and not cropped, it's the same as finalBitmapUsedByMLKit.
-                                // If finalBitmapUsedByMLKit was recycled, this is fine. If not, it means it wasn't cropped.
-                                // The logic here is to ensure original is recycled if it's not the one that was processed and recycled.
-                                // Let's simplify: if original is not the one that was fed to MLKit (because a crop happened), recycle original.
-                                // If original *was* fed to MLKit, then finalBitmapUsedByMLKit is original, and it will be recycled if not already.
-                                // This is still a bit tricky. The goal:
-                                // 1. If cropped: recycle cropped, recycle original.
-                                // 2. If not cropped: recycle original (which is also finalBitmapUsedByMLKit).
-                                // The current logic:
-                                // if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) -> recycles cropped
-                                // if (finalOriginalBitmapForLambda != null && !finalOriginalBitmapForLambda.isRecycled()) -> this will try to recycle original
-                                // This might lead to double recycle if not cropped.
-                                // Corrected logic:
-                                // 1. Recycle the bitmap that was fed to MLKit if it was a *new* (cropped) bitmap.
-                                // 2. Always recycle the original bitmap from the proxy.
-                                // This means if no cropping happened, original is fed, then original is recycled.
-                                // If cropping happened, cropped is fed, cropped is recycled, original is recycled.
-                            }
-                        }
-                    });
+                Bitmap cropped = cropToRoi(original, rotationDegrees);
+                Bitmap bitmapToFeedMLKit = cropped != null ? cropped : original;
+                runRecognition(bitmapToFeedMLKit, rotationDegrees, original, cropped);
             }
+
             @Override
             public void onError(@NonNull ImageCaptureException exception) {
                 Log.e(TAG, "Image capture failed: " + exception.getMessage(), exception);
                 Toast.makeText(scanActivity.this, "Failed to capture image: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * Returns a bitmap cropped to the current ROI, or {@code null} when the
+     * overlay is not ready or the crop is degenerate (caller uses the original).
+     */
+    private Bitmap cropToRoi(Bitmap original, int rotationDegrees) {
+        RectF roiRectView = graphicOverlay.getRoiRectView();
+        if (roiRectView == null || graphicOverlay.getWidth() <= 0 || graphicOverlay.getHeight() <= 0
+                || graphicOverlay.getSourceImageWidth() <= 0 || graphicOverlay.getSourceImageHeight() <= 0) {
+            Log.w(TAG, "ROI Rect or GraphicOverlay dimensions not ready. Using original bitmap.");
+            return null;
+        }
+
+        float widthScale = graphicOverlay.getWidthScaleFactor();
+        float heightScale = graphicOverlay.getHeightScaleFactor();
+        float roiLeft = (roiRectView.left - graphicOverlay.getPostScaleWidthOffset()) / widthScale;
+        float roiTop = (roiRectView.top - graphicOverlay.getPostScaleHeightOffset()) / heightScale;
+        float roiWidth = roiRectView.width() / widthScale;
+        float roiHeight = roiRectView.height() / heightScale;
+
+        RoiCropCalculator.CropRect crop = RoiCropCalculator.compute(
+                rotationDegrees, graphicOverlay.isImageFlipped(),
+                roiLeft, roiTop, roiWidth, roiHeight,
+                original.getWidth(), original.getHeight());
+
+        if (!crop.isValid()) {
+            Log.w(TAG, "Calculated crop dimensions are invalid. Using original bitmap.");
+            return null;
+        }
+        try {
+            Bitmap result = Bitmap.createBitmap(original, crop.x, crop.y, crop.width, crop.height);
+            Log.d(TAG, "Cropped bitmap to: " + crop.width + "x" + crop.height);
+            return result;
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Error creating cropped bitmap: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // Runs ML Kit on the chosen bitmap and recycles bitmaps when complete.
+    private void runRecognition(Bitmap bitmapToFeedMLKit, int rotationDegrees,
+            Bitmap original, Bitmap cropped) {
+        InputImage image = InputImage.fromBitmap(bitmapToFeedMLKit, rotationDegrees);
+        mlkitRecognizer.process(image)
+                .addOnSuccessListener(this::onRecognitionSuccess)
+                .addOnFailureListener(this::onRecognitionFailure)
+                .addOnCompleteListener(task -> recycleBitmaps(original, cropped));
+    }
+
+    private void onRecognitionSuccess(Text visionText) {
+        String fullText = visionText.getText();
+        mTextView.setText(fullText.isEmpty() ? getString(R.string.no_text_available) : fullText);
+
+        String[] keywords = getResources().getStringArray(R.array.ocr_amount_keywords);
+        java.util.List<OcrAmountSelector.Candidate> candidates = new java.util.ArrayList<>();
+        for (Text.TextBlock block : visionText.getTextBlocks()) {
+            for (Text.Line line : block.getLines()) {
+                String potentialAmount = extractAmountFromLine(line.getText());
+                if (!potentialAmount.isEmpty()) {
+                    candidates.add(new OcrAmountSelector.Candidate(
+                            potentialAmount, OcrAmountSelector.hasKeyword(line.getText(), keywords)));
+                }
+            }
+        }
+        String bestFoundAmount = OcrAmountSelector.select(candidates);
+        mScannedAmountEditText.setText(bestFoundAmount);
+        proceed.setEnabled(!bestFoundAmount.isEmpty());
+        Log.d(TAG, "ML Kit OCR Success. Best Amount: " + bestFoundAmount);
+    }
+
+    private void onRecognitionFailure(Exception e) {
+        Log.e(TAG, "ML Kit OCR Failed: " + e.getMessage(), e);
+        mTextView.setText("OCR Failed: " + e.getMessage());
+        mScannedAmountEditText.setText("");
+        proceed.setEnabled(false);
+        Toast.makeText(scanActivity.this, "Text recognition failed.", Toast.LENGTH_SHORT).show();
+    }
+
+    // Recycles the cropped bitmap (if any) and the original capture bitmap.
+    private void recycleBitmaps(Bitmap original, Bitmap cropped) {
+        if (cropped != null && cropped != original && !cropped.isRecycled()) {
+            cropped.recycle();
+        }
+        if (original != null && !original.isRecycled()) {
+            original.recycle();
+        }
     }
 
     @androidx.camera.core.ExperimentalGetImage

@@ -16,9 +16,6 @@ import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 public class SignUp_Fragment extends Fragment implements OnClickListener {
 	private static View view;
@@ -84,6 +81,7 @@ public class SignUp_Fragment extends Fragment implements OnClickListener {
 			login.setTextColor(csl);
 			terms_conditions.setTextColor(csl);
 		} catch (Exception e) {
+			android.util.Log.w("SignUp_Fragment", "Could not apply text selector colors", e);
 		}
 	}
 
@@ -116,49 +114,42 @@ public class SignUp_Fragment extends Fragment implements OnClickListener {
 		String getPassword = password.getText().toString();
 		String getConfirmPassword = confirmPassword.getText().toString();
 
-		// Pattern match for email id
-		Pattern p = Pattern.compile(Utils.regEx);
-		Matcher m = p.matcher(getEmailId);
+		SignUpValidator.Result result = SignUpValidator.validate(
+				getFullName, getEmailId, getMobileNumber, getBudget,
+				getPassword, getConfirmPassword, terms_conditions.isChecked());
 
-		// Check if all strings are null or not
-		if (getFullName.isEmpty() || getFullName.isEmpty()
-				|| getEmailId.isEmpty() || getEmailId.isEmpty()
-				|| getMobileNumber.isEmpty() || getMobileNumber.isEmpty()
-				|| getBudget.isEmpty() || getBudget.isEmpty()
-				|| getPassword.isEmpty() || getPassword.isEmpty()
-				|| getConfirmPassword.isEmpty()
-				|| getConfirmPassword.isEmpty())
-
-			new CustomToast().Show_Toast(getActivity(), view,
-					"All fields are required.");
-
-		// Check if email id valid or not
-		else if (!m.find())
-			new CustomToast().Show_Toast(getActivity(), view,
-					"Your Email Id is Invalid.");
-
-		// Check if both password should be equal
-		else if (!getConfirmPassword.equals(getPassword))
-			new CustomToast().Show_Toast(getActivity(), view,
-					"Both password doesn't match.");
-
-		// Make sure user should check Terms and Conditions checkbox
-		else if (!terms_conditions.isChecked())
-			new CustomToast().Show_Toast(getActivity(), view,
-					"Please select Terms and Conditions.");
-
-		// Else do signup or do your stuff
-		else {
-			Contact c = new Contact ();
-			c.setName (getFullName);
-			c.setEmailId (getEmailId);
-			c.setMobile (Long.parseLong (getMobileNumber));
-			c.setPassword (getPassword);
-			c.setBudget(Long.parseLong (getBudget));
-			databaseHelper.insertContact(c,uid);
-			Toast.makeText(getActivity(), "Login with Email ID and password.", Toast.LENGTH_SHORT).show();
-			new MainActivity().replaceLoginFragment();
+		if (result == SignUpValidator.Result.VALID) {
+			registerContact(getFullName, getEmailId, getMobileNumber, getBudget, getPassword);
+		} else {
+			new CustomToast().Show_Toast(getActivity(), view, messageFor(result));
 		}
+	}
 
+	// Map a validation failure to its user-facing message.
+	private String messageFor(SignUpValidator.Result result) {
+		switch (result) {
+			case INVALID_EMAIL:
+				return "Your Email Id is Invalid.";
+			case PASSWORD_MISMATCH:
+				return "Both password doesn't match.";
+			case TERMS_NOT_ACCEPTED:
+				return "Please select Terms and Conditions.";
+			default:
+				return "All fields are required.";
+		}
+	}
+
+	// Persist the new contact and route back to the login screen.
+	private void registerContact(String name, String email, String mobile,
+			String budgetValue, String pwd) {
+		Contact c = new Contact();
+		c.setName(name);
+		c.setEmailId(email);
+		c.setMobile(Long.parseLong(mobile));
+		c.setPassword(pwd);
+		c.setBudget(Long.parseLong(budgetValue));
+		databaseHelper.insertContact(c, uid);
+		Toast.makeText(getActivity(), "Login with Email ID and password.", Toast.LENGTH_SHORT).show();
+		new MainActivity().replaceLoginFragment();
 	}
 }

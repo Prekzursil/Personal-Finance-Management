@@ -78,21 +78,8 @@ public class TransactionsActivity extends BaseActivity {
     }
 
     private String labelFor(String code) {
-        switch (code) {
-            case "Transport": return getString(R.string.cat_transport);
-            case "Food":      return getString(R.string.cat_food);
-            case "Bills":     return getString(R.string.cat_bills);
-            case "Sports":    return getString(R.string.cat_sports);
-            case "Home":      return getString(R.string.cat_home);
-            case "Pets":      return getString(R.string.cat_pets);
-            case "Education": return getString(R.string.cat_education);
-            case "Travel":    return getString(R.string.cat_travel);
-            case "Beauty":    return getString(R.string.cat_beauty);
-            case "Kids":      return getString(R.string.cat_kids);
-            case "Healthcare":return getString(R.string.cat_healthcare);
-            case "Movie":     return getString(R.string.cat_movie);
-            default:          return code;
-        }
+        int resId = CategoryLabels.resourceIdFor(code);
+        return resId == 0 ? code : getString(resId);
     }
 
     public void FloatingButtonToggle(View view) {
@@ -144,15 +131,7 @@ public class TransactionsActivity extends BaseActivity {
         take.setVisibility(View.INVISIBLE);
         pay.setVisibility(View.INVISIBLE);
 
-        View topNavBar = findViewById(R.id.top_navigation_bar);
-        TextView home    = topNavBar.findViewById(R.id.nav_home_text);
-        TextView alert   = topNavBar.findViewById(R.id.nav_alerts_text);
-        TextView options = topNavBar.findViewById(R.id.nav_options_text);
-
-        // All top tabs are inactive in TransactionsActivity
-        if (home != null) home.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
-        if (alert != null) alert.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
-        if (options != null) options.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+        setupNavBar();
 
         // default expense chart
         graphView(null);
@@ -160,116 +139,124 @@ public class TransactionsActivity extends BaseActivity {
         scan.setOnClickListener(v -> { startActivity(new Intent(this, scanActivity.class)); finish(); });
         take.setOnClickListener(v -> { startActivity(new Intent(this, TakeActivity.class)); finish(); });
         pay.setOnClickListener(v -> { startActivity(new Intent(this, PayActivity.class)); finish(); });
-        download.setOnClickListener(v -> {
-            Intent downloadIntent = new Intent(this, Download.class);
-            // Pass the current filter dates to Download activity
-            if (currentFilterStartDate != null && currentFilterEndDate != null) {
-                downloadIntent.putExtra("START_DATE", currentFilterStartDate);
-                downloadIntent.putExtra("END_DATE", currentFilterEndDate);
-            }
-            // If dates are null, Download activity will handle it as "All Time"
-            startActivity(downloadIntent);
-            // finish(); // Consider if finishing TransactionsActivity is desired here
-        });
+        download.setOnClickListener(v -> startDownload());
 
         graph.setOnClickListener(this::graphView);
         income.setOnClickListener(this::incomeGraphView);
         list.setOnClickListener(this::listView);
 
-        if (options != null) {
-            options.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
-        }
-        if (alert != null) {
-            alert.setOnClickListener(v -> { startActivity(new Intent(this, AlertsActivity.class)); finish(); });
-        }
-        if (home != null) {
-            home.setOnClickListener(v -> { startActivity(new Intent(this, Dashboard.class)); finish(); });
-        }
-
         populateTimeFilterSpinner();
-        Intent intent = getIntent();
-        String initialStartDate = intent.getStringExtra("START_DATE");
-        String initialEndDate = intent.getStringExtra("END_DATE");
-
-        if (initialStartDate != null && initialEndDate != null) {
-            currentFilterStartDate = initialStartDate;
-            currentFilterEndDate = initialEndDate;
-            // Set spinner to the corresponding period if possible, or default
-            // This part can be complex if trying to match specific month strings.
-            // For now, we'll just use the dates and the spinner will default or be set by user.
-            // A more robust solution would parse these dates and find the matching spinner option.
-        } else {
-            updateDateFilter(getString(R.string.filter_current_month)); // Default
-        }
+        applyInitialDateFilter();
         // Set spinner selection after populating and potentially receiving intent extras
         setSpinnerSelectionFromDates(currentFilterStartDate, currentFilterEndDate);
-
 
         timeFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedOption = (String) parent.getItemAtPosition(position);
-                updateDateFilter(selectedOption);
-                // Refresh the currently active view (list or chart)
-                if (myListView.getVisibility() == View.VISIBLE) {
-                    listView(null); // Reload list view
-                } else { // If list is not visible, a chart must be. Refresh based on current chart title.
-                    // We get the current chart title from pieChart.getCenterText() if needed,
-                    // but simpler to just redraw the one that was active.
-                    // For now, assume if not list, it's one of the charts.
-                    // The specific chart (income/expense) is determined by which method was last called.
-                    // This logic might need refinement if we want to be more precise about which chart to refresh.
-                    // A simple way is to check which button/tab is "active" or store current chart type.
-                    // For now, let's assume graphView() or incomeGraphView() will be called appropriately by user action.
-                    // If current chart is expense chart:
-                    if (pieChart.getCenterText() != null && pieChart.getCenterText().equals(getString(R.string.title_expenses))) {
-                         graphView(null);
-                    } else if (pieChart.getCenterText() != null && pieChart.getCenterText().equals(getString(R.string.title_income))) {
-                         incomeGraphView(null);
-                    } else {
-                        // Default to expense chart if unsure or if center text is not set yet (e.g. initial load)
-                        graphView(null);
-                    }
-                }
+                updateDateFilter((String) parent.getItemAtPosition(position));
+                refreshActiveView();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
         });
 
-
         pieChart.setTouchEnabled(true);
         pieChart.setHighlightPerTapEnabled(true);
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            private List<Integer> originalLegendFormColors = new ArrayList<>();
-            private boolean originalColorsStored = false;
-
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                PieEntry pe = (PieEntry)e;
+                PieEntry pe = (PieEntry) e;
                 if (pe == null) return;
-
-                // Show label in Snackbar
                 if (pe.getLabel() != null && !pe.getLabel().isEmpty()) {
                     Snackbar.make(pieChart, pe.getLabel(), Snackbar.LENGTH_SHORT).show();
                 }
-                // Highlight the selected slice
                 pieChart.highlightValue(h);
-                // Notify adapter to update legend item style
-                if (legendAdapter != null && h != null) { // Added null check for h
+                if (legendAdapter != null && h != null) {
                     legendAdapter.setSelectedPosition((int) h.getX());
                 }
             }
 
             @Override public void onNothingSelected() {
-                // Clear highlight when nothing is selected
                 pieChart.highlightValue(null);
-                // Notify adapter to clear selection style
                 if (legendAdapter != null) {
                     legendAdapter.clearSelection();
                 }
             }
         });
+    }
+
+    // Colors and wires the top navigation bar tabs (all inactive on this screen).
+    private void setupNavBar() {
+        View topNavBar = findViewById(R.id.top_navigation_bar);
+        TextView home    = topNavBar.findViewById(R.id.nav_home_text);
+        TextView alert   = topNavBar.findViewById(R.id.nav_alerts_text);
+        TextView options = topNavBar.findViewById(R.id.nav_options_text);
+
+        int inactive = ContextCompat.getColor(this, R.color.text_primary);
+        setTabColor(home, inactive);
+        setTabColor(alert, inactive);
+        setTabColor(options, inactive);
+
+        setTabClick(options, SettingsActivity.class, false);
+        setTabClick(alert, AlertsActivity.class, true);
+        setTabClick(home, Dashboard.class, true);
+    }
+
+    private void setTabColor(TextView tab, int color) {
+        if (tab != null) {
+            tab.setTextColor(color);
+        }
+    }
+
+    private void setTabClick(TextView tab, Class<?> target, boolean finishAfter) {
+        if (tab == null) {
+            return;
+        }
+        tab.setOnClickListener(v -> {
+            startActivity(new Intent(this, target));
+            if (finishAfter) {
+                finish();
+            }
+        });
+    }
+
+    // Launches the Download screen, forwarding the active date filter when set.
+    private void startDownload() {
+        Intent downloadIntent = new Intent(this, Download.class);
+        if (currentFilterStartDate != null && currentFilterEndDate != null) {
+            downloadIntent.putExtra("START_DATE", currentFilterStartDate);
+            downloadIntent.putExtra("END_DATE", currentFilterEndDate);
+        }
+        // If dates are null, Download activity will handle it as "All Time".
+        startActivity(downloadIntent);
+    }
+
+    // Applies the date filter from intent extras, defaulting to the current month.
+    private void applyInitialDateFilter() {
+        Intent intent = getIntent();
+        String initialStartDate = intent.getStringExtra("START_DATE");
+        String initialEndDate = intent.getStringExtra("END_DATE");
+        if (initialStartDate != null && initialEndDate != null) {
+            currentFilterStartDate = initialStartDate;
+            currentFilterEndDate = initialEndDate;
+        } else {
+            updateDateFilter(getString(R.string.filter_current_month)); // Default
+        }
+    }
+
+    // Redraws whichever view (list / expense chart / income chart) is active.
+    private void refreshActiveView() {
+        if (myListView.getVisibility() == View.VISIBLE) {
+            listView(null);
+            return;
+        }
+        CharSequence center = pieChart.getCenterText();
+        if (center != null && center.toString().equals(getString(R.string.title_income))) {
+            incomeGraphView(null);
+        } else {
+            graphView(null); // expense chart or initial/default load
+        }
     }
 
     @Override
