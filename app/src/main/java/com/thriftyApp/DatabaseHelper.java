@@ -216,8 +216,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Contact getUser () {
         db = this.getReadableDatabase ();
         Contact c = new Contact ();
-        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PASSWORD +  ", " + COLUMN_NAME + ", " + COLUMN_BUDGET +  ", "+COLUMN_MOBILE +  " FROM " + TABLE_SIGNUP + " WHERE " + COLUMN_ID + " = " + Utils.userId + ";";
-        Cursor cursor = db.rawQuery (query, null);
+        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PASSWORD +  ", " + COLUMN_NAME + ", " + COLUMN_BUDGET +  ", "+COLUMN_MOBILE +  " FROM " + TABLE_SIGNUP + " WHERE " + COLUMN_ID + " = ?;";
+        Cursor cursor = db.rawQuery (query, new String[]{String.valueOf(Utils.userId)});
         if (cursor.moveToFirst ()) {
                 c.setId (Integer.parseInt (cursor.getString (0)));
                 c.setEmailId (cursor.getString (1));
@@ -249,8 +249,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<String> getTransactions () {
         ArrayList<String> list = new ArrayList<> ();
         db = this.getReadableDatabase ();
-        String query = "SELECT " + COL_TID + ", " + COL_AMOUNT + ", " + COL_TAG + " , " + COL_DATETIME +" , " + COL_EXIN + ", " + COL_U_ID +" FROM " + TABLE_TRANSACT +" WHERE " + COL_U_ID + " = " + Utils.userId + " ORDER BY " + COL_DATETIME + " DESC ;" ;
-        Cursor cursor = db.rawQuery (query, null);
+        String query = "SELECT " + COL_TID + ", " + COL_AMOUNT + ", " + COL_TAG + " , " + COL_DATETIME +" , " + COL_EXIN + ", " + COL_U_ID +" FROM " + TABLE_TRANSACT +" WHERE " + COL_U_ID + " = ? ORDER BY " + COL_DATETIME + " DESC ;" ;
+        Cursor cursor = db.rawQuery (query, new String[]{String.valueOf(Utils.userId)});
 
         String tag, amount, exin, uid, timeA, timeB;
         if (cursor.moveToFirst ()) {
@@ -516,10 +516,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Add COL_ALERT_ID to the selection
         String query = "SELECT " + COL_ALERT_ID + ", " + COL_ALERT_TIME + ", " + COL_ALERT_MESSAGE + ", " + COL_USER_ID +
                        " FROM " + TABLE_ALERTS +
-                       " WHERE " + COL_USER_ID + " = " + Utils.userId +
+                       " WHERE " + COL_USER_ID + " = ?" +
                        " AND " + COL_ALERT_TIME + " > datetime('now')" +
                        " ORDER BY " + COL_ALERT_TIME + " ASC";
-        Cursor cursor = db.rawQuery (query, null);
+        Cursor cursor = db.rawQuery (query, new String[]{String.valueOf(Utils.userId)});
 
         if (cursor.moveToFirst ()) {
             int alertIdIndex = cursor.getColumnIndexOrThrow(COL_ALERT_ID);
@@ -546,8 +546,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         AlertsTable reminder = null;
         String query = "SELECT " + COL_ALERT_ID + ", " + COL_ALERT_TIME + ", " + COL_ALERT_MESSAGE + ", " + COL_USER_ID +
                        " FROM " + TABLE_ALERTS +
-                       " WHERE " + COL_ALERT_ID + " = ? AND " + COL_USER_ID + " = " + Utils.userId;
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(reminderId)});
+                       " WHERE " + COL_ALERT_ID + " = ? AND " + COL_USER_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(reminderId), String.valueOf(Utils.userId)});
 
         if (cursor.moveToFirst()) {
             reminder = new AlertsTable();
