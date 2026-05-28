@@ -1,0 +1,311 @@
+# Instincts generated from https://github.com/Prekzursil/Personal-Finance-Management
+# Generated: 2026-05-28T11:36:32.804Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: Personal-Finance-Management-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Commit Length
+
+## Action
+
+Write moderate-length commit messages (~55 characters)
+
+## Evidence
+
+- Average commit message length: 55 chars
+- Based on 5 commits
+
+---
+id: Personal-Finance-Management-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Naming Files
+
+## Action
+
+Use PascalCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: PascalCase
+
+---
+id: Personal-Finance-Management-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: Personal-Finance-Management-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: Personal-Finance-Management-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.ts
+
+## Evidence
+
+- File pattern: *.test.ts
+- Consistent across test files
+
+---
+id: Personal-Finance-Management-workflow-add-or-refactor-core-logic-and-corresponding-tests
+trigger: "when doing add or refactor core logic and corresponding tests"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Workflow Add Or Refactor Core Logic And Corresponding Tests
+
+## Action
+
+Follow the add-or-refactor-core-logic-and-corresponding-tests workflow:
+1. Create or refactor one or more Java classes in app/src/main/java/com/thriftyApp/
+2. Create or update corresponding test classes in app/src/test/java/com/thriftyApp/
+3. Ensure new or changed logic is covered by tests
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: app/src/main/java/com/thriftyApp/*.java, app/src/test/java/com/thriftyApp/*Test.java
+
+---
+id: Personal-Finance-Management-workflow-update-build-or-ci-configuration
+trigger: "when doing update build or ci configuration"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Workflow Update Build Or Ci Configuration
+
+## Action
+
+Follow the update-build-or-ci-configuration workflow:
+1. Edit build configuration files such as app/build.gradle or gradle.properties
+2. Edit CI workflow files in .github/workflows/
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: app/build.gradle, gradle.properties, .github/workflows/*.yml
+
+---
+id: personal-finance-management-instinct-naming-conventions
+trigger: "When creating or renaming files, classes, functions, or constants in Java code"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Naming Conventions
+
+## Action
+
+Use PascalCase for files and classes, camelCase for functions, and SCREAMING_SNAKE_CASE for constants
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions
+- Consistent file and class naming in app/src/main/java/com/thriftyApp/*.java
+
+---
+id: personal-finance-management-instinct-import-style
+trigger: "When importing Java classes or packages"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Import Style
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in codeStyle.importStyle
+
+---
+id: personal-finance-management-instinct-export-style
+trigger: "When exporting Java classes or members"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle
+
+---
+id: personal-finance-management-instinct-test-file-location
+trigger: "When adding or updating unit tests for core logic"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Test File Location
+
+## Action
+
+Place test classes in app/src/test/java/com/thriftyApp/ and name them with a *Test.java suffix
+
+## Evidence
+
+- Pattern in workflows.add-or-refactor-core-logic-and-corresponding-tests.filesInvolved
+- Example: app/src/test/java/com/thriftyApp/*Test.java
+
+---
+id: personal-finance-management-instinct-test-coverage
+trigger: "When new or changed logic is added or refactored"
+confidence: 0.92
+domain: testing
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Test Coverage
+
+## Action
+
+Ensure corresponding unit tests are created or updated to cover the new or changed logic
+
+## Evidence
+
+- Workflow: add-or-refactor-core-logic-and-corresponding-tests
+- Commit example: 'Ensure new or changed logic is covered by tests'
+
+---
+id: personal-finance-management-instinct-commit-format
+trigger: "When writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Commit Format
+
+## Action
+
+Use a concise, freeform message describing the change (average length ~55 characters, no enforced prefix)
+
+## Evidence
+
+- Pattern in commits: freeform, no prefixes, average length 55
+- Examples: 'Fix SQL injection in DatabaseHelper user-scoped queries'
+
+---
+id: personal-finance-management-instinct-add-or-refactor-core-logic-and-tests
+trigger: "When adding new core logic or refactoring existing logic"
+confidence: 0.92
+domain: workflow
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Add Or Refactor Core Logic And Tests
+
+## Action
+
+Create or refactor Java classes in app/src/main/java/com/thriftyApp/ and update or add corresponding *Test.java files in app/src/test/java/com/thriftyApp/
+
+## Evidence
+
+- Workflow: add-or-refactor-core-logic-and-corresponding-tests
+- Commit sequence and files involved
+
+---
+id: personal-finance-management-instinct-update-build-or-ci-configuration
+trigger: "When build parameters, test coverage, or CI workflow configuration need to be changed"
+confidence: 0.88
+domain: workflow
+source: repo-analysis
+source_repo: Prekzursil/Personal-Finance-Management
+---
+
+# Personal Finance Management Instinct Update Build Or Ci Configuration
+
+## Action
+
+Edit app/build.gradle, gradle.properties, or .github/workflows/*.yml as appropriate
+
+## Evidence
+
+- Workflow: update-build-or-ci-configuration
+- Commit sequence and files involved
+
