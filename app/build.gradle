@@ -45,6 +45,9 @@ jacoco {
 // classes loaded through Robolectric's sandbox classloader). Enabling the
 // jacoco extension on the unit-test task attaches the agent to that JVM.
 tasks.withType(Test).configureEach {
+    // The unit-test JVM forks for Robolectric; give it enough heap so loading
+    // and instrumenting the Robolectric sandbox classes does not OOM.
+    maxHeapSize = "2g"
     jacoco {
         includeNoLocationClasses = true
         excludes = ['jdk.internal.*']
