@@ -1,0 +1,37 @@
+# GuardRails configuration
+# Reference: https://docs.guardrails.io/docs/configuration
+#
+# Bounds the org-installed GuardRails App's scan to source code so its
+# status check converges (excluding build output, generated artifacts,
+# tests, and Gradle wrappers). All analyzers stay enabled with default
+# rules; no findings are silenced.
+
+version: 1
+
+ignore-paths:
+  - "**/build/**"
+  - "**/.gradle/**"
+  - "**/gradle/**"
+  - "gradle/**"
+  - "gradlew"
+  - "gradlew.bat"
+  - "**/generated/**"
+  - "**/intermediates/**"
+  - "**/outputs/**"
+  - "app/build/**"
+  - "**/src/test/**"
+  - "**/src/androidTest/**"
+  - "docs/**"
+
+engines:
+  java:
+    enabled: true
+    secrets:
+      enabled: true
+    sast:
+      enabled: true
+  general:
+    secrets:
+      enabled: true
+    vulnerable_dependencies:
+      enabled: true
