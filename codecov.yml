@@ -38,3 +38,10 @@ component_management:
 bundle_analysis:
   warning_threshold: "0%"
   status: informational
+
+ignore:
+  - ".guardrails.yml"
+  - ".guardrails.yaml"
+  - ".qlty/**"
+  - ".github/CODEQL.md"
+  - ".github/dependabot.yml"
