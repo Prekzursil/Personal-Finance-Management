@@ -16,9 +16,6 @@ import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 public class SignUp_Fragment extends Fragment implements OnClickListener {
 	private static View view;
@@ -116,10 +113,6 @@ public class SignUp_Fragment extends Fragment implements OnClickListener {
 		String getPassword = password.getText().toString();
 		String getConfirmPassword = confirmPassword.getText().toString();
 
-		// Pattern match for email id
-		Pattern p = Pattern.compile(Utils.regEx);
-		Matcher m = p.matcher(getEmailId);
-
 		// Check if all strings are null or not
 		if (getFullName.isEmpty() || getFullName.isEmpty()
 				|| getEmailId.isEmpty() || getEmailId.isEmpty()
@@ -133,7 +126,7 @@ public class SignUp_Fragment extends Fragment implements OnClickListener {
 					"All fields are required.");
 
 		// Check if email id valid or not
-		else if (!m.find())
+		else if (!Utils.isValidEmail(getEmailId))
 			new CustomToast().Show_Toast(getActivity(), view,
 					"Your Email Id is Invalid.");
 

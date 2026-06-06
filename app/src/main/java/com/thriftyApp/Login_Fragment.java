@@ -43,8 +43,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Login_Fragment extends Fragment implements OnClickListener {
 
@@ -296,14 +294,12 @@ public class Login_Fragment extends Fragment implements OnClickListener {
         String emailStr = emailid.getText().toString();
         String pwdStr   = password.getText().toString();
 
-        Matcher m = Pattern.compile(Utils.regEx).matcher(emailStr);
-
         if (emailStr.isEmpty() || pwdStr.isEmpty()) {
             loginLayout.startAnimation(shakeAnimation);
             new CustomToast().Show_Toast(requireActivity(), view, "Enter both credentials.");
             return;
         }
-        if (!m.find()) {
+        if (!Utils.isValidEmail(emailStr)) {
             new CustomToast().Show_Toast(requireActivity(), view, "Your Email Id is Invalid.");
             return;
         }

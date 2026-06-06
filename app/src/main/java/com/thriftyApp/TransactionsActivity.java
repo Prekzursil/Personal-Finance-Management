@@ -241,9 +241,6 @@ public class TransactionsActivity extends BaseActivity {
         pieChart.setTouchEnabled(true);
         pieChart.setHighlightPerTapEnabled(true);
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            private List<Integer> originalLegendFormColors = new ArrayList<>();
-            private boolean originalColorsStored = false;
-
             @Override
             public void onValueSelected(Entry e, Highlight h) {
                 PieEntry pe = (PieEntry)e;

@@ -1,6 +1,7 @@
 //noinspection GradleCompatible
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'jacoco'
 
 android {
     compileSdk 34
@@ -17,6 +18,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Enable JaCoCo instrumentation for unit-test coverage reports.
+            enableUnitTestCoverage true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -26,6 +31,40 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+// Generates an HTML + XML coverage report for the debug JVM unit tests.
+// Only pure-JVM logic (no android.* framework dependencies) is exercised by
+// these tests; android framework classes are excluded from the report so the
+// percentage reflects testable code rather than un-unit-testable UI glue.
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    def fileFilter = [
+            '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*',
+            '**/*Test*.*', 'android/**/*.*', '**/databinding/**'
+    ]
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
+    def mainSrc = "${projectDir}/src/main/java"
+
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+            'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec',
+            'jacoco/testDebugUnitTest.exec'
+    ]))
 }
 
 dependencies {
@@ -38,7 +77,7 @@ dependencies {
     implementation 'androidx.gridlayout:gridlayout:1.1.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'com.google.firebase:firebase-auth:23.1.0'
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.google.android.gms:play-services-vision:20.1.3'
