@@ -229,8 +229,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void changeBudget () {
-        db = this.getWritableDatabase ();
-
+        // getUser() reassigns the shared `db` field to a *readable* handle, so a
+        // writable handle must be obtained *after* it to perform the update. Use
+        // a distinct local (no longer named `db`) so it does not shadow the field
+        // and the write is guaranteed to run against a writable database.
         Contact c = getUser ();
         c.setBudget (Long.parseLong (Utils.budget));
         ContentValues values = new ContentValues ();
@@ -240,7 +242,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put (COLUMN_BUDGET, c.getBudget ());
         values.put (COLUMN_PASSWORD, c.getPassword ());
 
-        db.update(TABLE_SIGNUP, values, COLUMN_ID + " = ?",
+        SQLiteDatabase writableDb = this.getWritableDatabase ();
+        writableDb.update(TABLE_SIGNUP, values, COLUMN_ID + " = ?",
                 new String[] { String.valueOf(c.getId ()) });
     }
 
