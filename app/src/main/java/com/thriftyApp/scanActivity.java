@@ -367,14 +367,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         });
     }
 
-    @androidx.camera.core.ExperimentalGetImage
-    private void processImageWithMLKit(InputImage image) {
-        // This method is now effectively a passthrough as the listeners are attached
-        // directly where mlkitRecognizer.process() is called in takePictureAndRecognizeText.
-        // Kept for potential future direct use or refactoring.
-        Log.d(TAG, "processImageWithMLKit called - Note: actual processing logic is now chained in takePictureAndRecognizeText");
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
