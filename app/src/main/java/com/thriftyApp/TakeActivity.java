@@ -75,7 +75,7 @@ public class TakeActivity extends BaseActivity {
         dateTextView.setText(formattedDate); 
 
         addIncome.setOnClickListener(v -> {
-            if (take.getText().toString().equals("") || tag.getText().toString().equals("")) {
+            if (take.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Enter valid amount and tag.", Toast.LENGTH_SHORT).show();
             } else {
                 addTake();

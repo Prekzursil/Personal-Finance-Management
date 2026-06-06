@@ -187,10 +187,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                     Log.d(TAG, "ROI Debug: GraphicOverlay WidthScaleFactor: " + graphicOverlay.getWidthScaleFactor() + ", HeightScaleFactor: " + graphicOverlay.getHeightScaleFactor());
                     Log.d(TAG, "ROI Debug: GraphicOverlay PostScaleWidthOffset: " + graphicOverlay.getPostScaleWidthOffset() + ", PostScaleHeightOffset: " + graphicOverlay.getPostScaleHeightOffset());
 
-                    // Dimensions of the source image as oriented for the GraphicOverlay
-                    float orientedSourceWidth = graphicOverlay.getSourceImageWidth(); 
-                    float orientedSourceHeight = graphicOverlay.getSourceImageHeight();
-
                     // Scale factors from oriented source to view
                     float overlayWidthScale = graphicOverlay.getWidthScaleFactor(); 
                     float overlayHeightScale = graphicOverlay.getHeightScaleFactor();
@@ -330,7 +326,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                             finalBitmapUsedByMLKit.recycle();
                             Log.d(TAG, "Recycled cropped bitmap (finalBitmapUsedByMLKit).");
                         }
-                        if (finalOriginalBitmapForLambda != null && !finalOriginalBitmapForLambda.isRecycled()) {
+                        if (!finalOriginalBitmapForLambda.isRecycled()) {
                             // If it was cropped, original is different and needs recycling.
                             // If not cropped, finalBitmapUsedByMLKit IS finalOriginalBitmapForLambda.
                             // So, only recycle original if it's different from what was processed OR if it was processed and not cropped.
@@ -557,14 +553,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         int ySize = yBuffer.remaining();
         int uSize = uBuffer.remaining();
         int vSize = vBuffer.remaining();
-        
-        int uvPixelStride = planes[1].getPixelStride(); // Assuming U/V planes have same pixel stride
-        int uvRowStride = planes[1].getRowStride();
 
-
-        byte[] nv21 = new byte[ySize + uSize + vSize]; // This size might be too large if planes are not contiguous
-                                                    // Or too small if there's padding not accounted for.
-                                                    // A more accurate size for NV21 is width * height * 3 / 2.
         int width = imageProxy.getWidth();
         int height = imageProxy.getHeight();
         byte[] nv21CorrectSize = new byte[width * height * 3 / 2];

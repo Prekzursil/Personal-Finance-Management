@@ -138,9 +138,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, new String[]{googleUserId});
 
         if (cursor != null && cursor.moveToFirst()) {
-            id = cursor.getString(0);        
-            String email = cursor.getString(1);
-            pass = cursor.getString(2);      
+            id = cursor.getString(0);
+            pass = cursor.getString(2);
             Utils.userName = cursor.getString(3);  
             budget = cursor.getString(4);    
 
@@ -232,7 +231,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void changeBudget () {
         db = this.getWritableDatabase ();
 
-        SQLiteDatabase db = this.getWritableDatabase();
         Contact c = getUser ();
         c.setBudget (Long.parseLong (Utils.budget));
         ContentValues values = new ContentValues ();

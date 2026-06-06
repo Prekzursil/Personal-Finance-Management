@@ -71,7 +71,7 @@ public class PayActivity extends BaseActivity {
                     Transactions t = new Transactions();
                     t.setTid(editId);
                     t.setExin(0);
-                    Double d2 = Double.parseDouble(pay.getText().toString());
+                    double d2 = Double.parseDouble(pay.getText().toString());
                     t.setAmount(Math.round(d2));
                     t.setTag(tag.getText().toString());
                     String created = intent.getStringExtra("created_at");
@@ -190,8 +190,8 @@ public class PayActivity extends BaseActivity {
     public void addPay () {
         Transactions t = new Transactions ();
         t.setExin (0);
-        Double d = Double.parseDouble (pay.getText ().toString ());
-        Log.i("Omg", d.toString ());
+        double d = Double.parseDouble (pay.getText ().toString ());
+        Log.i("Omg", Double.toString (d));
         long l = Math.round (d);
         t.setAmount (l);
         t.setTag (tag.getText ().toString ());
