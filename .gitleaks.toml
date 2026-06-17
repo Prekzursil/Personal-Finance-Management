@@ -1,0 +1,31 @@
+# gitleaks configuration for the lean secrets gate (pinned tool: gitleaks 8.30.1).
+# The gate runs via pre-commit over the working tree and must report 0 findings.
+# Extends the upstream default ruleset; we only add path/match allowlists for
+# generated / vendored trees and genuine non-secret fixtures (no real secrets).
+title = "personal-finance-management lean secrets gate"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated/vendored trees and reasoned non-secrets (not real secrets)."
+
+paths = [
+  '''(^|/)\.venv/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)vendor/''',
+  '''(^|/)build/''',
+  '''(^|/)out/''',
+  '''(^|/)dist/''',
+  '''(^|/)\.git/''',
+  '''.*\.egg-info/''',
+  # Android Gradle wrapper jar (binary, upstream artifact).
+  '''(^|/)gradle/wrapper/gradle-wrapper\.jar$''',
+  # Firebase/Google Android CLIENT config. The "api_key.current_key" in this file
+  # is a Google Android API client key, NOT a server secret: it is designed to be
+  # bundled in the shipped APK and is access-restricted by Android package name +
+  # SHA-1 signing-cert fingerprint on the Google side (Google documents committing
+  # google-services.json to source control as safe). Already public in the APK and
+  # in git history; not an undisclosed credential. Reason-dated 2026-06-17.
+  '''(^|/)app/google-services\.json$''',
+]

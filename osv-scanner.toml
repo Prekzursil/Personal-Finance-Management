@@ -1,0 +1,9 @@
+# osv-scanner configuration for the lean dependency gate (pinned tool: osv-scanner 2.3.8).
+# The gate runs `osv-scanner scan source --config=osv-scanner.toml --recursive .`
+# (see the reusable-quality.yml gate-deps step) and must report 0 actionable CVEs.
+#
+# POLICY: an [[IgnoredVulns]] entry is allowed ONLY for a genuinely-unfixable vuln
+# (no non-breaking upgrade available) OR one provably not reachable in THIS app,
+# each with a reason + dated review note (greppable). No baseline file is used;
+# clean-zero is reached by upgrading where a safe fix exists, and only by a
+# reasoned per-CVE ignore where it does not.

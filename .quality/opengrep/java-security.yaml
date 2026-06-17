@@ -1,0 +1,73 @@
+# Curated Java/Android security rules (high-signal subset distilled from
+# p/java + p/r2c-security-audit). opengrep/semgrep compatible. See README.md.
+# Clean-zero gate: 0 findings. Suppress a genuine false positive inline with a
+# greppable `// nosemgrep: <rule-id> -- <reason>`.
+rules:
+  - id: java-runtime-exec-tainted
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Runtime.exec / ProcessBuilder invoked with a dynamically built command.
+      Risk of OS command injection (CWE-78). Use a fixed argv and validate input.
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+    patterns:
+      - pattern-either:
+          - pattern: Runtime.getRuntime().exec($CMD + ...)
+          - pattern: new ProcessBuilder($CMD + ...)
+
+  - id: java-sql-string-concat
+    languages: [java]
+    severity: ERROR
+    message: >-
+      SQL statement built by string concatenation. Risk of SQL injection
+      (CWE-89). Use parameterized queries / prepared statements / SQLite
+      selectionArgs instead of concatenating user input into SQL.
+    metadata:
+      category: security
+      cwe: "CWE-89: SQL Injection"
+    patterns:
+      - pattern-either:
+          - pattern: $DB.rawQuery("..." + $X, ...)
+          - pattern: $DB.execSQL("..." + $X)
+          - pattern: $ST.executeQuery("..." + $X)
+          - pattern: $ST.execute("..." + $X)
+
+  - id: java-weak-message-digest-md5
+    languages: [java]
+    severity: ERROR
+    message: >-
+      MD5 is cryptographically broken (CWE-327). Do not use it for security /
+      integrity decisions; use SHA-256 or stronger.
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+    patterns:
+      - pattern: MessageDigest.getInstance("MD5")
+
+  - id: java-trust-all-certs
+    languages: [java]
+    severity: ERROR
+    message: >-
+      A TrustManager that accepts all certificates disables TLS verification
+      (CWE-295) and enables MITM. Use the platform default trust store.
+    metadata:
+      category: security
+      cwe: "CWE-295: Improper Certificate Validation"
+    patterns:
+      - pattern: |
+          public void checkServerTrusted(...) { }
+
+  - id: java-webview-javascript-enabled
+    languages: [java]
+    severity: WARNING
+    message: >-
+      WebView JavaScript is enabled. Combined with addJavascriptInterface or
+      loading untrusted content this is an XSS/RCE risk (CWE-749). Confirm only
+      trusted content is loaded.
+    metadata:
+      category: security
+      cwe: "CWE-749: Exposed Dangerous Method or Function"
+    patterns:
+      - pattern: $S.setJavaScriptEnabled(true)
