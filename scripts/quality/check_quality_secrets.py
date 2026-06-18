@@ -22,11 +22,27 @@ DEFAULT_REQUIRED_VARS = [
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate required quality-gate secrets/variables are configured.")
-    parser.add_argument("--required-secret", action="append", default=[], help="Additional required secret env var name")
-    parser.add_argument("--required-var", action="append", default=[], help="Additional required variable env var name")
-    parser.add_argument("--out-json", default="quality-secrets/secrets.json", help="Output JSON path")
-    parser.add_argument("--out-md", default="quality-secrets/secrets.md", help="Output markdown path")
+    parser = argparse.ArgumentParser(
+        description="Validate required quality-gate secrets/variables are configured."
+    )
+    parser.add_argument(
+        "--required-secret",
+        action="append",
+        default=[],
+        help="Additional required secret env var name",
+    )
+    parser.add_argument(
+        "--required-var",
+        action="append",
+        default=[],
+        help="Additional required variable env var name",
+    )
+    parser.add_argument(
+        "--out-json", default="quality-secrets/secrets.json", help="Output JSON path"
+    )
+    parser.add_argument(
+        "--out-md", default="quality-secrets/secrets.md", help="Output markdown path"
+    )
     return parser.parse_args()
 
 
@@ -42,9 +58,15 @@ def _dedupe(items: list[str]) -> list[str]:
     return out
 
 
-def evaluate_env(required_secrets: list[str], required_vars: list[str]) -> dict[str, list[str]]:
-    missing_secrets = [name for name in required_secrets if not str(os.environ.get(name, "")).strip()]
-    missing_vars = [name for name in required_vars if not str(os.environ.get(name, "")).strip()]
+def evaluate_env(
+    required_secrets: list[str], required_vars: list[str]
+) -> dict[str, list[str]]:
+    missing_secrets = [
+        name for name in required_secrets if not str(os.environ.get(name, "")).strip()
+    ]
+    missing_vars = [
+        name for name in required_vars if not str(os.environ.get(name, "")).strip()
+    ]
     present_secrets = [name for name in required_secrets if name not in missing_secrets]
     present_vars = [name for name in required_vars if name not in missing_vars]
     return {
@@ -95,11 +117,17 @@ def _safe_output_path(raw: str, fallback: str, base: Path | None = None) -> Path
 
 def main() -> int:
     args = _parse_args()
-    required_secrets = _dedupe(DEFAULT_REQUIRED_SECRETS + list(args.required_secret or []))
+    required_secrets = _dedupe(
+        DEFAULT_REQUIRED_SECRETS + list(args.required_secret or [])
+    )
     required_vars = _dedupe(DEFAULT_REQUIRED_VARS + list(args.required_var or []))
 
     result = evaluate_env(required_secrets, required_vars)
-    status = "pass" if not result["missing_secrets"] and not result["missing_vars"] else "fail"
+    status = (
+        "pass"
+        if not result["missing_secrets"] and not result["missing_vars"]
+        else "fail"
+    )
     payload = {
         "status": status,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
@@ -118,7 +146,9 @@ def main() -> int:
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_md.parent.mkdir(parents=True, exist_ok=True)
 
-    out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     out_md.write_text(_render_md(payload), encoding="utf-8")
     print(out_md.read_text(encoding="utf-8"), end="")
 

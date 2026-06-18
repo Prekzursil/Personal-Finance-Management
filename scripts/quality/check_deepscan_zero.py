@@ -10,20 +10,34 @@ from pathlib import Path
 from typing import Any
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
-_HELPER_ROOT = _SCRIPT_DIR if (_SCRIPT_DIR / "security_helpers.py").exists() else _SCRIPT_DIR.parent
+_HELPER_ROOT = (
+    _SCRIPT_DIR
+    if (_SCRIPT_DIR / "security_helpers.py").exists()
+    else _SCRIPT_DIR.parent
+)
 if str(_HELPER_ROOT) not in sys.path:
     sys.path.insert(0, str(_HELPER_ROOT))
 
-from security_helpers import normalize_https_url
+from security_helpers import normalize_https_url  # noqa: E402  # import follows sys.path bootstrap above
 
 TOTAL_KEYS = {"total", "totalItems", "total_items", "count", "hits", "open_issues"}
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Assert DeepScan has zero total open issues.")
-    parser.add_argument("--token", default="", help="DeepScan API token (falls back to DEEPSCAN_API_TOKEN env)")
-    parser.add_argument("--out-json", default="deepscan-zero/deepscan.json", help="Output JSON path")
-    parser.add_argument("--out-md", default="deepscan-zero/deepscan.md", help="Output markdown path")
+    parser = argparse.ArgumentParser(
+        description="Assert DeepScan has zero total open issues."
+    )
+    parser.add_argument(
+        "--token",
+        default="",
+        help="DeepScan API token (falls back to DEEPSCAN_API_TOKEN env)",
+    )
+    parser.add_argument(
+        "--out-json", default="deepscan-zero/deepscan.json", help="Output JSON path"
+    )
+    parser.add_argument(
+        "--out-md", default="deepscan-zero/deepscan.md", help="Output markdown path"
+    )
     return parser.parse_args()
 
 
@@ -120,9 +134,13 @@ def main() -> int:
             payload = _request_json(open_issues_url, token)
             open_issues = extract_total_open(payload)
             if open_issues is None:
-                findings.append("DeepScan response did not include a parseable total issue count.")
+                findings.append(
+                    "DeepScan response did not include a parseable total issue count."
+                )
             elif open_issues != 0:
-                findings.append(f"DeepScan reports {open_issues} open issues (expected 0).")
+                findings.append(
+                    f"DeepScan reports {open_issues} open issues (expected 0)."
+                )
             status = "pass" if not findings else "fail"
         except Exception as exc:  # pragma: no cover - network/runtime surface
             findings.append(f"DeepScan API request failed: {exc}")
@@ -145,7 +163,9 @@ def main() -> int:
 
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_md.parent.mkdir(parents=True, exist_ok=True)
-    out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     out_md.write_text(_render_md(payload), encoding="utf-8")
     print(out_md.read_text(encoding="utf-8"), end="")
     return 0 if status == "pass" else 1
