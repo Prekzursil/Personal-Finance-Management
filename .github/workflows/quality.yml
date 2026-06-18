@@ -18,4 +18,4 @@ concurrency:
 
 jobs:
   quality:
-    uses: Prekzursil/quality-zero-platform/.github/workflows/reusable-quality.yml@feat/lean-quality-template
+    uses: Prekzursil/quality-zero-platform/.github/workflows/reusable-quality.yml@v1
