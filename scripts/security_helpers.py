@@ -30,11 +30,19 @@ def normalize_https_url(
         raise ValueError(f"URL credentials are not allowed: {raw_url!r}")
 
     hostname = parsed.hostname.lower().strip(".")
-    if allowed_hosts is not None and hostname not in {host.lower().strip(".") for host in allowed_hosts}:
+    if allowed_hosts is not None and hostname not in {
+        host.lower().strip(".") for host in allowed_hosts
+    }:
         raise ValueError(f"URL host is not in allowlist: {hostname}")
     if allowed_host_suffixes is not None:
-        suffixes = {suffix.lower().strip(".") for suffix in allowed_host_suffixes if suffix.strip(".")}
-        if suffixes and not any(hostname == suffix or hostname.endswith(f".{suffix}") for suffix in suffixes):
+        suffixes = {
+            suffix.lower().strip(".")
+            for suffix in allowed_host_suffixes
+            if suffix.strip(".")
+        }
+        if suffixes and not any(
+            hostname == suffix or hostname.endswith(f".{suffix}") for suffix in suffixes
+        ):
             raise ValueError(f"URL host is not in suffix allowlist: {hostname}")
 
     try:

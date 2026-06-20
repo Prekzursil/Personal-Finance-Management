@@ -11,27 +11,43 @@ from pathlib import Path
 from typing import Any
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
-_HELPER_ROOT = _SCRIPT_DIR if (_SCRIPT_DIR / "security_helpers.py").exists() else _SCRIPT_DIR.parent
+_HELPER_ROOT = (
+    _SCRIPT_DIR
+    if (_SCRIPT_DIR / "security_helpers.py").exists()
+    else _SCRIPT_DIR.parent
+)
 if str(_HELPER_ROOT) not in sys.path:
     sys.path.insert(0, str(_HELPER_ROOT))
 
-from security_helpers import normalize_https_url
+from security_helpers import normalize_https_url  # noqa: E402  # import follows sys.path bootstrap above
 
 SENTRY_API_BASE = "https://sentry.io/api/0"
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Assert Sentry has zero unresolved issues for configured projects.")
-    parser.add_argument("--org", default="", help="Sentry org slug (falls back to SENTRY_ORG env)")
+    parser = argparse.ArgumentParser(
+        description="Assert Sentry has zero unresolved issues for configured projects."
+    )
+    parser.add_argument(
+        "--org", default="", help="Sentry org slug (falls back to SENTRY_ORG env)"
+    )
     parser.add_argument(
         "--project",
         action="append",
         default=[],
         help="Project slug (repeatable, falls back to SENTRY_PROJECT_BACKEND/SENTRY_PROJECT_WEB env)",
     )
-    parser.add_argument("--token", default="", help="Sentry auth token (falls back to SENTRY_AUTH_TOKEN env)")
-    parser.add_argument("--out-json", default="sentry-zero/sentry.json", help="Output JSON path")
-    parser.add_argument("--out-md", default="sentry-zero/sentry.md", help="Output markdown path")
+    parser.add_argument(
+        "--token",
+        default="",
+        help="Sentry auth token (falls back to SENTRY_AUTH_TOKEN env)",
+    )
+    parser.add_argument(
+        "--out-json", default="sentry-zero/sentry.json", help="Output JSON path"
+    )
+    parser.add_argument(
+        "--out-md", default="sentry-zero/sentry.md", help="Output markdown path"
+    )
     return parser.parse_args()
 
 
@@ -110,7 +126,9 @@ def main() -> int:
     args = _parse_args()
     token = (args.token or os.environ.get("SENTRY_AUTH_TOKEN", "")).strip()
     org = (args.org or os.environ.get("SENTRY_ORG", "")).strip()
-    api_base = normalize_https_url(SENTRY_API_BASE, allowed_hosts={"sentry.io"}).rstrip("/")
+    api_base = normalize_https_url(SENTRY_API_BASE, allowed_hosts={"sentry.io"}).rstrip(
+        "/"
+    )
 
     projects = [p for p in args.project if p]
     if not projects:
@@ -127,7 +145,9 @@ def main() -> int:
     if not org:
         findings.append("SENTRY_ORG is missing.")
     if not projects:
-        findings.append("No Sentry projects configured (SENTRY_PROJECT_BACKEND/SENTRY_PROJECT_WEB).")
+        findings.append(
+            "No Sentry projects configured (SENTRY_PROJECT_BACKEND/SENTRY_PROJECT_WEB)."
+        )
 
     status = "fail"
     if not findings:
@@ -146,7 +166,9 @@ def main() -> int:
                             f"Sentry project {project} returned unresolved issues but no X-Hits header for exact totals."
                         )
                 if unresolved != 0:
-                    findings.append(f"Sentry project {project} has {unresolved} unresolved issues (expected 0).")
+                    findings.append(
+                        f"Sentry project {project} has {unresolved} unresolved issues (expected 0)."
+                    )
                 project_results.append({"project": project, "unresolved": unresolved})
 
             status = "pass" if not findings else "fail"
@@ -171,7 +193,9 @@ def main() -> int:
 
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_md.parent.mkdir(parents=True, exist_ok=True)
-    out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     out_md.write_text(_render_md(payload), encoding="utf-8")
     print(out_md.read_text(encoding="utf-8"), end="")
     return 0 if status == "pass" else 1

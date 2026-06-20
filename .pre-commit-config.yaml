@@ -1,0 +1,50 @@
+# Lean quality gates -- local auto-fixers + fast checks (charter 2026-06-16).
+# `pre-commit run --all-files` is the gate-1/gate-5 entrypoint used by CI
+# (reusable-quality.yml). Every rev is pinned; bump versions here together with
+# the gate workflow.
+#
+# This repo's APPLICATION is pure Java/Android. The only Python in the tree is the
+# legacy quality-zero-platform (QZT) SaaS helper machinery under scripts/, which
+# carries its own QZT commit/type contracts and is slated for removal in the
+# migration runbook -- it is NOT linted/reformatted by the lean gate (out of scope,
+# would violate QZT's py2-compat contract). The Python lint/format hooks below are
+# therefore scoped to application Python under app/ (none today; ready for future).
+# Java auto-formatting (Spotless) is wired into Gradle, not pre-commit.
+minimum_pre_commit_version: "3.5.0"
+
+default_language_version:
+  python: python3
+
+exclude: |-
+  (?x)^(
+    scripts/|
+    node_modules/|
+    build/|
+    out/|
+    dist/|
+    vendor/|
+    \.venv/|
+    gradle/wrapper/|
+    .*\.egg-info/
+  )
+
+repos:
+  # --- Gate 1: Python lint + format (ruff), scoped to application code (app/) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.17
+    hooks:
+      - id: ruff
+        name: ruff (lint --fix)
+        args: ["--fix"]
+        files: '^app/.*\.py$'
+      - id: ruff-format
+        name: ruff (format)
+        files: '^app/.*\.py$'
+
+  # --- Gate 5: secrets (gitleaks) over the working tree, must report 0 ---
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+        name: gitleaks (secrets)
+        args: ["--config", ".gitleaks.toml"]

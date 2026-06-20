@@ -12,11 +12,15 @@ from pathlib import Path
 from typing import Any
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
-_HELPER_ROOT = _SCRIPT_DIR if (_SCRIPT_DIR / "security_helpers.py").exists() else _SCRIPT_DIR.parent
+_HELPER_ROOT = (
+    _SCRIPT_DIR
+    if (_SCRIPT_DIR / "security_helpers.py").exists()
+    else _SCRIPT_DIR.parent
+)
 if str(_HELPER_ROOT) not in sys.path:
     sys.path.insert(0, str(_HELPER_ROOT))
 
-from security_helpers import normalize_https_url
+from security_helpers import normalize_https_url  # noqa: E402  # import follows sys.path bootstrap above
 
 
 TOTAL_KEYS = {"total", "totalItems", "total_items", "count", "hits", "open_issues"}
@@ -24,18 +28,34 @@ CODACY_API_BASE = "https://api.codacy.com"
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Assert Codacy has zero total open issues.")
-    parser.add_argument("--provider", default="gh", help="Organization provider, for example gh")
+    parser = argparse.ArgumentParser(
+        description="Assert Codacy has zero total open issues."
+    )
+    parser.add_argument(
+        "--provider", default="gh", help="Organization provider, for example gh"
+    )
     parser.add_argument("--owner", required=True, help="Repository owner")
     parser.add_argument("--repo", required=True, help="Repository name")
-    parser.add_argument("--token", default="", help="Codacy API token (falls back to CODACY_API_TOKEN env)")
-    parser.add_argument("--out-json", default="codacy-zero/codacy.json", help="Output JSON path")
-    parser.add_argument("--out-md", default="codacy-zero/codacy.md", help="Output markdown path")
+    parser.add_argument(
+        "--token",
+        default="",
+        help="Codacy API token (falls back to CODACY_API_TOKEN env)",
+    )
+    parser.add_argument(
+        "--out-json", default="codacy-zero/codacy.json", help="Output JSON path"
+    )
+    parser.add_argument(
+        "--out-md", default="codacy-zero/codacy.md", help="Output markdown path"
+    )
     return parser.parse_args()
 
 
-def _request_json(url: str, token: str, *, method: str = "GET", data: dict[str, Any] | None = None) -> dict[str, Any]:
-    safe_url = normalize_https_url(url, allowed_host_suffixes={"codacy.com"}).rstrip("/")
+def _request_json(
+    url: str, token: str, *, method: str = "GET", data: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    safe_url = normalize_https_url(url, allowed_host_suffixes={"codacy.com"}).rstrip(
+        "/"
+    )
     body = None
     headers = {
         "Accept": "application/json",
@@ -119,7 +139,9 @@ def main() -> int:
 
     args = _parse_args()
     token = (args.token or os.environ.get("CODACY_API_TOKEN", "")).strip()
-    api_base = normalize_https_url(CODACY_API_BASE, allowed_hosts={"api.codacy.com"}).rstrip("/")
+    api_base = normalize_https_url(
+        CODACY_API_BASE, allowed_hosts={"api.codacy.com"}
+    ).rstrip("/")
     owner = urllib.parse.quote(args.owner.strip(), safe="")
     repo = urllib.parse.quote(args.repo.strip(), safe="")
 
@@ -144,9 +166,13 @@ def main() -> int:
                 payload = _request_json(url, token, method="POST", data={})
                 open_issues = extract_total_open(payload)
                 if open_issues is None:
-                    findings.append("Codacy response did not include a parseable total issue count.")
+                    findings.append(
+                        "Codacy response did not include a parseable total issue count."
+                    )
                 elif open_issues != 0:
-                    findings.append(f"Codacy reports {open_issues} open issues (expected 0).")
+                    findings.append(
+                        f"Codacy reports {open_issues} open issues (expected 0)."
+                    )
                 status = "pass" if not findings else "fail"
                 break
             except urllib.error.HTTPError as exc:
@@ -188,7 +214,9 @@ def main() -> int:
 
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_md.parent.mkdir(parents=True, exist_ok=True)
-    out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     out_md.write_text(_render_md(payload), encoding="utf-8")
     print(out_md.read_text(encoding="utf-8"), end="")
     return 0 if status == "pass" else 1

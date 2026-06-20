@@ -12,11 +12,15 @@ from pathlib import Path
 from typing import Any
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
-_HELPER_ROOT = _SCRIPT_DIR if (_SCRIPT_DIR / "security_helpers.py").exists() else _SCRIPT_DIR.parent
+_HELPER_ROOT = (
+    _SCRIPT_DIR
+    if (_SCRIPT_DIR / "security_helpers.py").exists()
+    else _SCRIPT_DIR.parent
+)
 if str(_HELPER_ROOT) not in sys.path:
     sys.path.insert(0, str(_HELPER_ROOT))
 
-from security_helpers import normalize_https_url
+from security_helpers import normalize_https_url  # noqa: E402  # import follows sys.path bootstrap above
 
 SONAR_API_BASE = "https://sonarcloud.io"
 UNRESOLVED_HOTSPOT_STATUS = "TO_REVIEW"
@@ -30,11 +34,17 @@ def _parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--project-key", required=True, help="Sonar project key")
-    parser.add_argument("--token", default="", help="Sonar token (falls back to SONAR_TOKEN env)")
+    parser.add_argument(
+        "--token", default="", help="Sonar token (falls back to SONAR_TOKEN env)"
+    )
     parser.add_argument("--branch", default="", help="Optional branch scope")
     parser.add_argument("--pull-request", default="", help="Optional PR scope")
-    parser.add_argument("--out-json", default="sonar-zero/sonar.json", help="Output JSON path")
-    parser.add_argument("--out-md", default="sonar-zero/sonar.md", help="Output markdown path")
+    parser.add_argument(
+        "--out-json", default="sonar-zero/sonar.json", help="Output JSON path"
+    )
+    parser.add_argument(
+        "--out-md", default="sonar-zero/sonar.md", help="Output markdown path"
+    )
     return parser.parse_args()
 
 
@@ -44,7 +54,9 @@ def _auth_header(token: str) -> str:
 
 
 def _request_json(url: str, auth_header: str) -> dict[str, Any]:
-    safe_url = normalize_https_url(url, allowed_host_suffixes={"sonarcloud.io"}).rstrip("/")
+    safe_url = normalize_https_url(url, allowed_host_suffixes={"sonarcloud.io"}).rstrip(
+        "/"
+    )
     request = urllib.request.Request(
         safe_url,
         headers={
@@ -102,7 +114,9 @@ def _scope_query(project_key: str, branch: str, pull_request: str) -> dict[str, 
     return query
 
 
-def _search_total(api_base: str, endpoint: str, query: dict[str, str], auth_header: str) -> int:
+def _search_total(
+    api_base: str, endpoint: str, query: dict[str, str], auth_header: str
+) -> int:
     url = f"{api_base}{endpoint}?{urllib.parse.urlencode(query)}"
     payload = _request_json(url, auth_header)
     paging = payload.get("paging") or {}
@@ -114,7 +128,9 @@ def main() -> int:
 
     args = _parse_args()
     token = (args.token or os.environ.get("SONAR_TOKEN", "")).strip()
-    api_base = normalize_https_url(SONAR_API_BASE, allowed_hosts={"sonarcloud.io"}).rstrip("/")
+    api_base = normalize_https_url(
+        SONAR_API_BASE, allowed_hosts={"sonarcloud.io"}
+    ).rstrip("/")
 
     findings: list[str] = []
     open_issues: int | None = None
@@ -138,9 +154,13 @@ def main() -> int:
             if args.pull_request:
                 issues_query["pullRequest"] = args.pull_request
 
-            open_issues = _search_total(api_base, "/api/issues/search", issues_query, auth)
+            open_issues = _search_total(
+                api_base, "/api/issues/search", issues_query, auth
+            )
 
-            hotspots_query = _scope_query(args.project_key, args.branch, args.pull_request)
+            hotspots_query = _scope_query(
+                args.project_key, args.branch, args.pull_request
+            )
             hotspots_query["ps"] = "1"
             security_hotspots_total = _search_total(
                 api_base,
@@ -164,13 +184,17 @@ def main() -> int:
             quality_gate = str(project_status.get("status") or "UNKNOWN")
 
             if open_issues != 0:
-                findings.append(f"Sonar reports {open_issues} open issues (expected 0).")
+                findings.append(
+                    f"Sonar reports {open_issues} open issues (expected 0)."
+                )
             if security_hotspots_to_review != 0:
                 findings.append(
                     f"Sonar reports {security_hotspots_to_review} unresolved security hotspots (expected 0)."
                 )
             if quality_gate != "OK":
-                findings.append(f"Sonar quality gate status is {quality_gate} (expected OK).")
+                findings.append(
+                    f"Sonar quality gate status is {quality_gate} (expected OK)."
+                )
 
             status = "pass" if not findings else "fail"
         except Exception as exc:  # pragma: no cover - network/runtime surface
@@ -197,7 +221,9 @@ def main() -> int:
 
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_md.parent.mkdir(parents=True, exist_ok=True)
-    out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     out_md.write_text(_render_md(payload), encoding="utf-8")
     print(out_md.read_text(encoding="utf-8"), end="")
 
