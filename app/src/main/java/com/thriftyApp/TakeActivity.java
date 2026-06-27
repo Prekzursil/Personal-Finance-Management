@@ -1,6 +1,5 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import com.thriftyApp.BaseActivity;
 import com.thriftyApp.Transactions;
@@ -57,10 +56,16 @@ public class TakeActivity extends BaseActivity {
             tag.setText(intent.getStringExtra("tag"));
             addIncome.setImageResource(android.R.drawable.ic_menu_save);
             addIncome.setOnClickListener(v -> {
+                double d2;
+                try {
+                    d2 = Double.parseDouble(take.getText().toString());
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getApplicationContext(), "Enter a valid amount.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Transactions t = new Transactions();
                 t.setTid(editId);
                 t.setExin(1);
-                double d2 = Double.parseDouble(take.getText().toString());
                 t.setAmount(Math.round(d2));
                 t.setTag(tag.getText().toString());
                 String created = intent.getStringExtra("created_at");
@@ -84,7 +89,7 @@ public class TakeActivity extends BaseActivity {
         dateTextView.setText(formattedDate); 
 
         addIncome.setOnClickListener(v -> {
-            if (take.getText().toString().equals("") || tag.getText().toString().equals("")) {
+            if (take.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Enter valid amount and tag.", Toast.LENGTH_SHORT).show();
             } else {
                 addTake();
@@ -99,11 +104,18 @@ public class TakeActivity extends BaseActivity {
 
     }
     public void addTake () {
+        long amount;
+        try {
+            amount = Long.parseLong (take.getText ().toString ());
+        } catch (NumberFormatException e) {
+            Toast.makeText (getApplicationContext (), "Enter a valid amount.", Toast.LENGTH_SHORT).show ();
+            return;
+        }
         Transactions t = new Transactions ();
         t.setExin (1);
-        t.setAmount (Long.parseLong (take.getText ().toString ()));
+        t.setAmount (amount);
         t.setTag (tag.getText ().toString ());
-        t.setUid (Integer.parseInt (Utils.userId));
+        t.setUid (Utils.safeParseInt (Utils.userId, 0));
         databaseHelper.insertTransaction (t);
         Toast.makeText (getApplicationContext (),"Added Income", Toast.LENGTH_SHORT).show ();
         databaseHelper.getTransactions ();

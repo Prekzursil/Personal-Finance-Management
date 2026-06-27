@@ -22,6 +22,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
@@ -74,8 +76,13 @@ public class Login_Fragment extends Fragment implements OnClickListener {
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private MaterialCardView googleSignInButton;
-    private static final int RC_SIGN_IN = 9001;
     private final Executor executor = Executors.newSingleThreadExecutor();
+
+    // Modern replacement for the deprecated startActivityForResult/onActivityResult
+    // pair. Registered during fragment construction as required by the API.
+    private final ActivityResultLauncher<Intent> signInLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    result -> handleSignInResult(result.getData()));
 
     public Login_Fragment() {}
 
@@ -182,22 +189,18 @@ public class Login_Fragment extends Fragment implements OnClickListener {
 
     /* ----------------------- Google sign-in -------------------------- */
     private void signInWithGoogle() {
-        startActivityForResult(mGoogleSignInClient.getSignInIntent(), RC_SIGN_IN);
+        signInLauncher.launch(mGoogleSignInClient.getSignInIntent());
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task =
-                    GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account);
-            } catch (ApiException e) {
-                showToastSafe("Google Sign-In failed");
-                Log.e("SignIn", "Google sign in failed", e);
-            }
+    private void handleSignInResult(Intent data) {
+        Task<GoogleSignInAccount> task =
+                GoogleSignIn.getSignedInAccountFromIntent(data);
+        try {
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            firebaseAuthWithGoogle(account);
+        } catch (ApiException e) {
+            showToastSafe("Google Sign-In failed");
+            Log.e("SignIn", "Google sign in failed", e);
         }
     }
 
@@ -318,7 +321,7 @@ public class Login_Fragment extends Fragment implements OnClickListener {
         String userId    = data.get(1);
         String budget    = data.get(2);
 
-        if (actualPwd.equals(pwdStr)) {
+        if (PasswordHasher.verifyPassword(pwdStr, actualPwd)) {
             Utils.userId = userId;
             Utils.budget = budget;
             ((MainActivity) requireActivity()).moveToSplash();

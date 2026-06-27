@@ -1,6 +1,5 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent;
@@ -176,6 +175,7 @@ public class TransactionsActivity extends BaseActivity {
         graph.setOnClickListener(this::graphView);
         income.setOnClickListener(this::incomeGraphView);
         list.setOnClickListener(this::listView);
+        floatingActionButtonT.setOnClickListener(this::FloatingButtonToggle);
 
         if (options != null) {
             options.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
@@ -242,9 +242,6 @@ public class TransactionsActivity extends BaseActivity {
         pieChart.setTouchEnabled(true);
         pieChart.setHighlightPerTapEnabled(true);
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            private List<Integer> originalLegendFormColors = new ArrayList<>();
-            private boolean originalColorsStored = false;
-
             @Override
             public void onValueSelected(Entry e, Highlight h) {
                 PieEntry pe = (PieEntry)e;

@@ -1,6 +1,5 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -109,6 +108,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         }, ContextCompat.getMainExecutor(this));
 
         proceed.setEnabled(false);
+        proceed.setOnClickListener(this::proceedClick);
 
         clearScanButton.setOnClickListener(v -> {
             mTextView.setText(R.string.no_text_available);
@@ -193,10 +193,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                     Log.d(TAG, "ROI Debug: GraphicOverlay SourceImageWidth: " + graphicOverlay.getSourceImageWidth() + ", SourceImageHeight: " + graphicOverlay.getSourceImageHeight());
                     Log.d(TAG, "ROI Debug: GraphicOverlay WidthScaleFactor: " + graphicOverlay.getWidthScaleFactor() + ", HeightScaleFactor: " + graphicOverlay.getHeightScaleFactor());
                     Log.d(TAG, "ROI Debug: GraphicOverlay PostScaleWidthOffset: " + graphicOverlay.getPostScaleWidthOffset() + ", PostScaleHeightOffset: " + graphicOverlay.getPostScaleHeightOffset());
-
-                    // Dimensions of the source image as oriented for the GraphicOverlay
-                    float orientedSourceWidth = graphicOverlay.getSourceImageWidth(); 
-                    float orientedSourceHeight = graphicOverlay.getSourceImageHeight();
 
                     // Scale factors from oriented source to view
                     float overlayWidthScale = graphicOverlay.getWidthScaleFactor(); 
@@ -337,7 +333,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                             finalBitmapUsedByMLKit.recycle();
                             Log.d(TAG, "Recycled cropped bitmap (finalBitmapUsedByMLKit).");
                         }
-                        if (finalOriginalBitmapForLambda != null && !finalOriginalBitmapForLambda.isRecycled()) {
+                        if (!finalOriginalBitmapForLambda.isRecycled()) {
                             // If it was cropped, original is different and needs recycling.
                             // If not cropped, finalBitmapUsedByMLKit IS finalOriginalBitmapForLambda.
                             // So, only recycle original if it's different from what was processed OR if it was processed and not cropped.
@@ -376,14 +372,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                 Toast.makeText(scanActivity.this, "Failed to capture image: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @androidx.camera.core.ExperimentalGetImage
-    private void processImageWithMLKit(InputImage image) {
-        // This method is now effectively a passthrough as the listeners are attached
-        // directly where mlkitRecognizer.process() is called in takePictureAndRecognizeText.
-        // Kept for potential future direct use or refactoring.
-        Log.d(TAG, "processImageWithMLKit called - Note: actual processing logic is now chained in takePictureAndRecognizeText");
     }
 
     @Override
@@ -559,13 +547,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         int uSize = uBuffer.remaining();
         int vSize = vBuffer.remaining();
         
-        int uvPixelStride = planes[1].getPixelStride(); // Assuming U/V planes have same pixel stride
-        int uvRowStride = planes[1].getRowStride();
-
-
-        byte[] nv21 = new byte[ySize + uSize + vSize]; // This size might be too large if planes are not contiguous
-                                                    // Or too small if there's padding not accounted for.
-                                                    // A more accurate size for NV21 is width * height * 3 / 2.
         int width = imageProxy.getWidth();
         int height = imageProxy.getHeight();
         byte[] nv21CorrectSize = new byte[width * height * 3 / 2];

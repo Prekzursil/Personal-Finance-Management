@@ -30,6 +30,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_PASSWORD= "password";
 
     private static final String COLUMN_GOOGLE_ID = "google_id";
+    // JSON backup key for the password column. The persisted value is already a
+    // salted PBKDF2 hash (see PasswordHasher), so it is round-tripped verbatim.
+    private static final String BK_PASSWORD = "password";
     private static final String TABLE_TRANSACT = "transactions";
     private static final String COL_TID = "id";
     private static final String COL_U_ID = "uid";
@@ -83,7 +86,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put (COLUMN_EMAIL, c.getEmailId ());
         values.put (COLUMN_MOBILE, c.getMobile ());
         values.put (COLUMN_BUDGET, c.getBudget ());
-        values.put (COLUMN_PASSWORD, c.getPassword ());
+        // Store a salted, irreversible hash instead of the clear-text password.
+        values.put (COLUMN_PASSWORD, PasswordHasher.hashPassword(c.getPassword ()));
         values.put(COLUMN_GOOGLE_ID, googleUserId);
         db.insert (TABLE_SIGNUP, null, values);
     }
@@ -138,9 +142,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, new String[]{googleUserId});
 
         if (cursor != null && cursor.moveToFirst()) {
-            id = cursor.getString(0);        
-            String email = cursor.getString(1);
-            pass = cursor.getString(2);      
+            id = cursor.getString(0);
+            pass = cursor.getString(2);
             Utils.userName = cursor.getString(3);  
             budget = cursor.getString(4);    
 
@@ -219,11 +222,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PASSWORD +  ", " + COLUMN_NAME + ", " + COLUMN_BUDGET +  ", "+COLUMN_MOBILE +  " FROM " + TABLE_SIGNUP + " WHERE " + COLUMN_ID + " = " + Utils.userId + ";";
         Cursor cursor = db.rawQuery (query, null);
         if (cursor.moveToFirst ()) {
-                c.setId (Integer.parseInt (cursor.getString (0)));
+                c.setId (Utils.safeParseInt (cursor.getString (0), 0));
                 c.setEmailId (cursor.getString (1));
                 c.setPassword (cursor.getString (2));
-                c.setMobile (Long.parseLong (cursor.getString (5)));
-                c.setBudget (Integer.parseInt (cursor.getString (4)));
+                c.setMobile (Utils.safeParseLong (cursor.getString (5), 0));
+                c.setBudget (Utils.safeParseInt (cursor.getString (4), 0));
                 c.setName (cursor.getString (3));
         }
         return c;
@@ -231,17 +234,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void changeBudget () {
         db = this.getWritableDatabase ();
-
-        SQLiteDatabase db = this.getWritableDatabase();
         Contact c = getUser ();
-        c.setBudget (Long.parseLong (Utils.budget));
+        // Only the budget changes here; do not rewrite name/email/mobile/password.
         ContentValues values = new ContentValues ();
-        values.put (COLUMN_NAME, c.getName ());
-        values.put (COLUMN_EMAIL, c.getEmailId ());
-        values.put (COLUMN_MOBILE, c.getMobile ());
-        values.put (COLUMN_BUDGET, c.getBudget ());
-        values.put (COLUMN_PASSWORD, c.getPassword ());
-
+        values.put (COLUMN_BUDGET, Utils.safeParseLong (Utils.budget, 0));
         db.update(TABLE_SIGNUP, values, COLUMN_ID + " = ?",
                 new String[] { String.valueOf(c.getId ()) });
     }
@@ -351,10 +347,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 }
 
                 Log.i("PreethisTransaction",tag +" " + amount+ " " + timeB+" " + exin + " "+uid );
-                t.setUid (Integer.parseInt (uid));
+                t.setUid (Utils.safeParseInt (uid, 0));
                 t.setTag (tag);
-                t.setExin (Integer.parseInt (exin));
-                t.setAmount (Integer.parseInt (amount));
+                t.setExin (Utils.safeParseInt (exin, 0));
+                t.setAmount (Utils.safeParseInt (amount, 0));
                 t.setCreated_at (timeB);
                 list.add (t);
             }while(cursor.moveToNext ());
@@ -393,7 +389,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (c1.moveToFirst ()) {
             String income = c1.getString (0);
             if (income != null) {
-                Utils.income = Integer.parseInt (income);
+                Utils.income = Utils.safeParseInt (income, 0);
                 Log.i("INCOME", String.valueOf (Utils.income));
             }
         }
@@ -415,7 +411,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (c2.moveToFirst () ) {
             String expense = c2.getString (0);
             if (expense != null) {
-                Utils.expense = Integer.parseInt(expense);
+                Utils.expense = Utils.safeParseInt(expense, 0);
             }
             Log.i("EXPENSE", String.valueOf (Utils.expense));
         }
@@ -445,7 +441,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 tag = cursor.getString (1);
                 amount = cursor.getString (0);
-                list.put(tag, Integer.parseInt (amount));
+                list.put(tag, Utils.safeParseInt (amount, 0));
                 Log.i("PreethisExpenses",tag +" " + amount);
             }while(cursor.moveToNext ());
         }
@@ -702,7 +698,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 values.put(COLUMN_EMAIL, contact.getString("email"));
                 values.put(COLUMN_MOBILE, contact.getLong("mobile"));
                 values.put(COLUMN_BUDGET, contact.getInt("budget"));
-                values.put(COLUMN_PASSWORD, contact.getString("password"));
+                values.put(COLUMN_PASSWORD, contact.getString(BK_PASSWORD));
                 values.put(COLUMN_GOOGLE_ID, contact.getString("google_id"));
                 db.insert(TABLE_SIGNUP, null, values);
             }

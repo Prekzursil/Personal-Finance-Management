@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -36,7 +37,17 @@ public class DriveServiceHelper {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final Executor executor = Executors.newSingleThreadExecutor();
-    private final OkHttpClient client = new OkHttpClient();
+    // Certificate pinning for the Google APIs endpoints this helper talks to.
+    // Pinned to the Google Trust Services root (GTS Root R1) plus the current
+    // GTS intermediate, so a forged/MITM certificate is rejected while normal
+    // Google certificate rotation (short-lived leaves) keeps working.
+    private static final CertificatePinner CERTIFICATE_PINNER = new CertificatePinner.Builder()
+            .add("*.googleapis.com", "sha256/hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=") // GTS Root R1
+            .add("*.googleapis.com", "sha256/YPtHaftLw6/0vnc2BnNKGF54xiCA28WFcccjkA4ypCM=") // GTS WR2
+            .build();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .certificatePinner(CERTIFICATE_PINNER)
+            .build();
     private final Gson gson = new Gson();
     private final Context context;
     private final GoogleSignInAccount account;

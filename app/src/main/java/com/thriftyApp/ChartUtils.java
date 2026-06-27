@@ -16,7 +16,6 @@ package com.thriftyApp;   // <-- adjust if your package differs
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import androidx.core.graphics.ColorUtils;
 
@@ -85,7 +84,6 @@ public final class ChartUtils {
         /* ------------------------------------------------------------------
          * 3)  Decide INSIDE vs OUTSIDE depending on slice count
          * ------------------------------------------------------------------ */
-        DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
         final float dp5  = Utils.convertDpToPixel(5f);
         final float dp10 = Utils.convertDpToPixel(10f);
 
