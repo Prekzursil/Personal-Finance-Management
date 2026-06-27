@@ -188,12 +188,11 @@ public class TransactionsActivity extends BaseActivity {
         }
 
         populateTimeFilterSpinner();
-        Intent intent = getIntent();
         // Use the caller-supplied date range when both extras are present; otherwise
         // fall back to the current month. (Assigned directly to the filter fields so
         // there are no redundant intermediate locals.)
-        currentFilterStartDate = intent.getStringExtra("START_DATE");
-        currentFilterEndDate = intent.getStringExtra("END_DATE");
+        currentFilterStartDate = getIntent().getStringExtra("START_DATE");
+        currentFilterEndDate = getIntent().getStringExtra("END_DATE");
         if (currentFilterStartDate == null || currentFilterEndDate == null) {
             updateDateFilter(getString(R.string.filter_current_month)); // Default
         }

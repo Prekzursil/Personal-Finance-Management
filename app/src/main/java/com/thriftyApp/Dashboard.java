@@ -257,12 +257,11 @@ public class Dashboard extends BaseActivity {
             // finish();
         });
 
-        // Updated to use IDs from included layout
-        View topNavBar = findViewById(R.id.top_navigation_bar);
+        // Updated to use IDs from included layout.
         // Home is the active tab (no navigation); the others navigate.
-        setupNavTab(topNavBar, R.id.nav_home_text, R.color.secondary, null);
-        setupNavTab(topNavBar, R.id.nav_options_text, R.color.text_primary, new Intent(this, SettingsActivity.class));
-        setupNavTab(topNavBar, R.id.nav_alerts_text, R.color.text_primary, new Intent(this, AlertsActivity.class));
+        setupNavTab(findViewById(R.id.top_navigation_bar), R.id.nav_home_text, R.color.secondary, null);
+        setupNavTab(findViewById(R.id.top_navigation_bar), R.id.nav_options_text, R.color.text_primary, new Intent(this, SettingsActivity.class));
+        setupNavTab(findViewById(R.id.top_navigation_bar), R.id.nav_alerts_text, R.color.text_primary, new Intent(this, AlertsActivity.class));
 
         // refreshData will call getTList and getTChart
     }
