@@ -1,6 +1,5 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.util.Log;
 import android.graphics.RectF; // Import for roiRectView
 import android.view.View;
@@ -77,6 +77,12 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        });
 
         proceed = findViewById(R.id.proceedButton);
         cameraPreviewView = findViewById(R.id.cameraPreviewView);
@@ -102,6 +108,7 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         }, ContextCompat.getMainExecutor(this));
 
         proceed.setEnabled(false);
+        proceed.setOnClickListener(this::proceedClick);
 
         clearScanButton.setOnClickListener(v -> {
             mTextView.setText(R.string.no_text_available);
@@ -132,23 +139,26 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
     }
 
     private void setupTapToFocus() {
-        cameraPreviewView.setOnTouchListener((view, motionEvent) -> {
-            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                if (camera == null) {
-                    Log.d(TAG, "Camera object is null, cannot start focus.");
-                    return true;
+        cameraPreviewView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    if (camera == null) {
+                        Log.d(TAG, "Camera object is null, cannot start focus.");
+                        return true;
+                    }
+                    MeteringPointFactory factory = cameraPreviewView.getMeteringPointFactory();
+                    MeteringPoint point = factory.createPoint(motionEvent.getX(), motionEvent.getY());
+                    FocusMeteringAction action = new FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF).build();
+                    try {
+                        camera.getCameraControl().startFocusAndMetering(action);
+                        Log.d(TAG, "Tap-to-focus action started.");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Tap-to-focus failed.", e);
+                    }
                 }
-                MeteringPointFactory factory = cameraPreviewView.getMeteringPointFactory();
-                MeteringPoint point = factory.createPoint(motionEvent.getX(), motionEvent.getY());
-                FocusMeteringAction action = new FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF).build();
-                try {
-                    camera.getCameraControl().startFocusAndMetering(action);
-                    Log.d(TAG, "Tap-to-focus action started.");
-                } catch (Exception e) {
-                    Log.e(TAG, "Tap-to-focus failed.", e);
-                }
+                return true;
             }
-            return true;
         });
     }
 
@@ -186,10 +196,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                     Log.d(TAG, "ROI Debug: GraphicOverlay SourceImageWidth: " + graphicOverlay.getSourceImageWidth() + ", SourceImageHeight: " + graphicOverlay.getSourceImageHeight());
                     Log.d(TAG, "ROI Debug: GraphicOverlay WidthScaleFactor: " + graphicOverlay.getWidthScaleFactor() + ", HeightScaleFactor: " + graphicOverlay.getHeightScaleFactor());
                     Log.d(TAG, "ROI Debug: GraphicOverlay PostScaleWidthOffset: " + graphicOverlay.getPostScaleWidthOffset() + ", PostScaleHeightOffset: " + graphicOverlay.getPostScaleHeightOffset());
-
-                    // Dimensions of the source image as oriented for the GraphicOverlay
-                    float orientedSourceWidth = graphicOverlay.getSourceImageWidth(); 
-                    float orientedSourceHeight = graphicOverlay.getSourceImageHeight();
 
                     // Scale factors from oriented source to view
                     float overlayWidthScale = graphicOverlay.getWidthScaleFactor(); 
@@ -325,40 +331,19 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                         proceed.setEnabled(false);
                         Toast.makeText(scanActivity.this, "Text recognition failed.", Toast.LENGTH_SHORT).show();
                     })
-                    .addOnCompleteListener(task -> {
-                        if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) {
-                            finalBitmapUsedByMLKit.recycle();
-                            Log.d(TAG, "Recycled cropped bitmap (finalBitmapUsedByMLKit).");
-                        }
-                        if (finalOriginalBitmapForLambda != null && !finalOriginalBitmapForLambda.isRecycled()) {
-                            // If it was cropped, original is different and needs recycling.
-                            // If not cropped, finalBitmapUsedByMLKit IS finalOriginalBitmapForLambda.
-                            // So, only recycle original if it's different from what was processed OR if it was processed and not cropped.
-                            if (finalWasCropped || (finalOriginalBitmapForLambda == finalBitmapUsedByMLKit && !finalBitmapUsedByMLKit.isRecycled())) {
-                                // Avoid double recycling if original was processed and already handled by finalBitmapUsedByMLKit logic
-                                if (finalOriginalBitmapForLambda != finalBitmapUsedByMLKit || !finalWasCropped) {
-                                     finalOriginalBitmapForLambda.recycle();
-                                     Log.d(TAG, "Recycled originalBitmapFromProxy.");
-                                }
-                            } else if (!finalWasCropped && finalOriginalBitmapForLambda == finalBitmapUsedByMLKit && !finalBitmapUsedByMLKit.isRecycled()){
-                                // This case should be covered by the above, but for clarity:
-                                // if original was used and not cropped, it's the same as finalBitmapUsedByMLKit.
-                                // If finalBitmapUsedByMLKit was recycled, this is fine. If not, it means it wasn't cropped.
-                                // The logic here is to ensure original is recycled if it's not the one that was processed and recycled.
-                                // Let's simplify: if original is not the one that was fed to MLKit (because a crop happened), recycle original.
-                                // If original *was* fed to MLKit, then finalBitmapUsedByMLKit is original, and it will be recycled if not already.
-                                // This is still a bit tricky. The goal:
-                                // 1. If cropped: recycle cropped, recycle original.
-                                // 2. If not cropped: recycle original (which is also finalBitmapUsedByMLKit).
-                                // The current logic:
-                                // if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) -> recycles cropped
-                                // if (finalOriginalBitmapForLambda != null && !finalOriginalBitmapForLambda.isRecycled()) -> this will try to recycle original
-                                // This might lead to double recycle if not cropped.
-                                // Corrected logic:
-                                // 1. Recycle the bitmap that was fed to MLKit if it was a *new* (cropped) bitmap.
-                                // 2. Always recycle the original bitmap from the proxy.
-                                // This means if no cropping happened, original is fed, then original is recycled.
-                                // If cropping happened, cropped is fed, cropped is recycled, original is recycled.
+                    .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<Text>() {
+                        @Override
+                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<Text> task) {
+                            // If a cropped bitmap was fed to ML Kit, recycle it (guard: only a
+                            // successful crop creates it). Then recycle the original; when no crop
+                            // happened the original IS the bitmap fed to ML Kit, so it is recycled once.
+                            if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) {
+                                finalBitmapUsedByMLKit.recycle();
+                                Log.d(TAG, "Recycled cropped bitmap (finalBitmapUsedByMLKit).");
+                            }
+                            if (!finalOriginalBitmapForLambda.isRecycled()) {
+                                finalOriginalBitmapForLambda.recycle();
+                                Log.d(TAG, "Recycled originalBitmapFromProxy.");
                             }
                         }
                     });
@@ -369,14 +354,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                 Toast.makeText(scanActivity.this, "Failed to capture image: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @androidx.camera.core.ExperimentalGetImage
-    private void processImageWithMLKit(InputImage image) {
-        // This method is now effectively a passthrough as the listeners are attached
-        // directly where mlkitRecognizer.process() is called in takePictureAndRecognizeText.
-        // Kept for potential future direct use or refactoring.
-        Log.d(TAG, "processImageWithMLKit called - Note: actual processing logic is now chained in takePictureAndRecognizeText");
     }
 
     @Override
@@ -426,12 +403,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         }
         intent.putExtra ("ocr", amountStr);
         startActivity(intent);
-        finish();
-    }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
         finish();
     }
 
@@ -522,7 +493,12 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                         }
                     })
                     .addOnFailureListener(e -> Log.e(TAG, "Text recognition from analyzer failed.", e))
-                    .addOnCompleteListener(task -> imageProxy.close());
+                    .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<Text>() {
+                        @Override
+                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<Text> task) {
+                            imageProxy.close();
+                        }
+                    });
             } else {
                 imageProxy.close();
             }
@@ -558,13 +534,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         int uSize = uBuffer.remaining();
         int vSize = vBuffer.remaining();
         
-        int uvPixelStride = planes[1].getPixelStride(); // Assuming U/V planes have same pixel stride
-        int uvRowStride = planes[1].getRowStride();
-
-
-        byte[] nv21 = new byte[ySize + uSize + vSize]; // This size might be too large if planes are not contiguous
-                                                    // Or too small if there's padding not accounted for.
-                                                    // A more accurate size for NV21 is width * height * 3 / 2.
         int width = imageProxy.getWidth();
         int height = imageProxy.getHeight();
         byte[] nv21CorrectSize = new byte[width * height * 3 / 2];

@@ -1,11 +1,11 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -103,17 +103,17 @@ public class TransactionsActivity extends BaseActivity {
         pay.setVisibility(vis);
     }
 
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        startActivity(new Intent(this, Dashboard.class));
-        finish();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transactions);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                startActivity(new Intent(TransactionsActivity.this, Dashboard.class));
+                finish();
+            }
+        });
         // if returning from an edit, show list directly
         boolean fromAll = getIntent().getBooleanExtra("from_all", false);
         if (fromAll) {
@@ -175,6 +175,7 @@ public class TransactionsActivity extends BaseActivity {
         graph.setOnClickListener(this::graphView);
         income.setOnClickListener(this::incomeGraphView);
         list.setOnClickListener(this::listView);
+        floatingActionButtonT.setOnClickListener(this::FloatingButtonToggle);
 
         if (options != null) {
             options.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
@@ -187,18 +188,12 @@ public class TransactionsActivity extends BaseActivity {
         }
 
         populateTimeFilterSpinner();
-        Intent intent = getIntent();
-        String initialStartDate = intent.getStringExtra("START_DATE");
-        String initialEndDate = intent.getStringExtra("END_DATE");
-
-        if (initialStartDate != null && initialEndDate != null) {
-            currentFilterStartDate = initialStartDate;
-            currentFilterEndDate = initialEndDate;
-            // Set spinner to the corresponding period if possible, or default
-            // This part can be complex if trying to match specific month strings.
-            // For now, we'll just use the dates and the spinner will default or be set by user.
-            // A more robust solution would parse these dates and find the matching spinner option.
-        } else {
+        // Use the caller-supplied date range when both extras are present; otherwise
+        // fall back to the current month. (Assigned directly to the filter fields so
+        // there are no redundant intermediate locals.)
+        currentFilterStartDate = getIntent().getStringExtra("START_DATE");
+        currentFilterEndDate = getIntent().getStringExtra("END_DATE");
+        if (currentFilterStartDate == null || currentFilterEndDate == null) {
             updateDateFilter(getString(R.string.filter_current_month)); // Default
         }
         // Set spinner selection after populating and potentially receiving intent extras
@@ -241,9 +236,6 @@ public class TransactionsActivity extends BaseActivity {
         pieChart.setTouchEnabled(true);
         pieChart.setHighlightPerTapEnabled(true);
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            private List<Integer> originalLegendFormColors = new ArrayList<>();
-            private boolean originalColorsStored = false;
-
             @Override
             public void onValueSelected(Entry e, Highlight h) {
                 PieEntry pe = (PieEntry)e;

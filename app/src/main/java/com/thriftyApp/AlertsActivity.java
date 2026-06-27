@@ -1,11 +1,11 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.view.View;
 // Remove unused imports like AdapterView, ArrayAdapter, ListView
 import android.widget.Button;
@@ -38,6 +38,14 @@ public class AlertsActivity extends BaseActivity implements ReminderAdapter.OnRe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_alerts);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent (getApplicationContext (),Dashboard.class);
+                startActivity (intent);
+                finish ();
+            }
+        });
         databaseHelper = new DatabaseHelper (this);
         // flagFloatingButton = false; // No longer needed
         floatingActionButton =  findViewById (R.id.floatingActionButtonA);
@@ -144,14 +152,6 @@ public class AlertsActivity extends BaseActivity implements ReminderAdapter.OnRe
         }
     }
     */
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent (getApplicationContext (),Dashboard.class);
-        startActivity (intent);
-        finish ();
-    }
 
     @Override
     protected void onResume() {

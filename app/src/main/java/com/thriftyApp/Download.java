@@ -23,6 +23,7 @@ import android.os.Bundle;
 // import android.os.Handler; // Not used
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 // import android.widget.ImageView; // Replaced by buttons
@@ -86,7 +87,12 @@ public class Download extends BaseActivity {
         buttonDownloadAllTime = findViewById(R.id.buttonDownloadAllTime);
         // The ImageView R.id.downloadpdf is still in the layout.
         // We'll make it trigger "All Time" download for now.
-        findViewById(R.id.downloadpdf).setOnClickListener(v -> generatePdfWithDateRange(null, null));
+        findViewById(R.id.downloadpdf).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                generatePdfWithDateRange(null, null);
+            }
+        });
 
 
         editTextStartDate.setOnClickListener(v -> showDatePickerDialog(true));

@@ -149,12 +149,22 @@ public class SignUp_Fragment extends Fragment implements OnClickListener {
 
 		// Else do signup or do your stuff
 		else {
+			long mobileValue;
+			long budgetValue;
+			try {
+				mobileValue = Long.parseLong (getMobileNumber);
+				budgetValue = Long.parseLong (getBudget);
+			} catch (NumberFormatException e) {
+				new CustomToast().Show_Toast(getActivity(), view,
+						"Mobile number and budget must be valid numbers.");
+				return;
+			}
 			Contact c = new Contact ();
 			c.setName (getFullName);
 			c.setEmailId (getEmailId);
-			c.setMobile (Long.parseLong (getMobileNumber));
+			c.setMobile (mobileValue);
 			c.setPassword (getPassword);
-			c.setBudget(Long.parseLong (getBudget));
+			c.setBudget(budgetValue);
 			databaseHelper.insertContact(c,uid);
 			Toast.makeText(getActivity(), "Login with Email ID and password.", Toast.LENGTH_SHORT).show();
 			new MainActivity().replaceLoginFragment();

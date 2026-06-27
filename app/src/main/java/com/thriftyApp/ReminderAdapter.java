@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ViewHolder> {
+public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ReminderViewHolder> {
 
     private List<AlertsTable> reminderList;
     private Context context;
@@ -40,14 +40,14 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ViewHo
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ReminderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_reminder, parent, false);
-        return new ViewHolder(view);
+        return new ReminderViewHolder(view);
     }
 
     // This is the onBindViewHolder method
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ReminderViewHolder holder, int position) {
         AlertsTable reminder = reminderList.get(position);
         holder.messageTextView.setText(reminder.getMessage());
 
@@ -90,13 +90,13 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ViewHo
         return reminderList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ReminderViewHolder extends RecyclerView.ViewHolder {
         TextView messageTextView;
         TextView dateTimeTextView;
         ImageButton editButton;
         ImageButton deleteButton;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ReminderViewHolder(@NonNull View itemView) {
             super(itemView);
             messageTextView = itemView.findViewById(R.id.reminderMessageTextView);
             dateTimeTextView = itemView.findViewById(R.id.reminderDateTimeTextView);

@@ -1,8 +1,8 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -98,11 +98,41 @@ public class Dashboard extends BaseActivity {
         return (y >= 128) ? Color.BLACK : Color.WHITE;
     }
 
+    /**
+     * Styles a top-navigation tab and, when {@code target} is non-null, wires it to
+     * open that activity. Centralizing the tab view lookup here keeps onCreate clean.
+     */
+    private void setupNavTab(View navBar, int textViewId, int colorRes, Intent target) {
+        TextView tab = navBar.findViewById(textViewId);
+        if (tab == null) {
+            return;
+        }
+        tab.setTextColor(ContextCompat.getColor(this, colorRes));
+        if (target != null) {
+            tab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(target);
+                }
+            });
+        }
+    }
+
     /* --------------------------------------------------------------- */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent i = new Intent(Dashboard.this, MainActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.putExtra("Exit me", true);
+                startActivity(i);
+                finish();
+            }
+        });
 
         /* ---------- Google-Drive backup bootstrap ---------- */
         if (getIntent().hasExtra("google_account")) {
@@ -112,11 +142,14 @@ public class Dashboard extends BaseActivity {
 
             showProgressDialog("Initializing backup...");
             backupManager.performSync(true)
-                .addOnSuccessListener(result -> {
-                    hideProgressDialog();
-                    Toast.makeText(this,
-                        "Initial sync completed", Toast.LENGTH_SHORT).show();
-                    refreshData(currentFilterStartDate, currentFilterEndDate);
+                .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        hideProgressDialog();
+                        Toast.makeText(Dashboard.this,
+                            "Initial sync completed", Toast.LENGTH_SHORT).show();
+                        refreshData(currentFilterStartDate, currentFilterEndDate);
+                    }
                 })
                 .addOnFailureListener(e -> {
                     hideProgressDialog();
@@ -131,7 +164,12 @@ public class Dashboard extends BaseActivity {
             if (account != null) {
                 backupManager = new BackupManager(this, account);
                 backupManager.performSync(false)
-                    .addOnSuccessListener(r -> refreshData(currentFilterStartDate, currentFilterEndDate))
+                    .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void r) {
+                            refreshData(currentFilterStartDate, currentFilterEndDate);
+                        }
+                    })
                     .addOnFailureListener(e ->
                         Log.e("Dashboard",
                             "Background sync failed: " + e.getMessage()));
@@ -219,35 +257,11 @@ public class Dashboard extends BaseActivity {
             // finish();
         });
 
-        // Updated to use IDs from included layout
-        View topNavBar = findViewById(R.id.top_navigation_bar);
-        TextView homeTab    = topNavBar.findViewById(R.id.nav_home_text);
-        TextView optionsTab = topNavBar.findViewById(R.id.nav_options_text);
-        TextView alertsTab  = topNavBar.findViewById(R.id.nav_alerts_text);
-
-        // Set active/inactive tab colors
-        if (homeTab != null) homeTab.setTextColor(ContextCompat.getColor(this, R.color.secondary)); // Active tab
-        if (optionsTab != null) optionsTab.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Inactive
-        if (alertsTab != null) alertsTab.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Inactive
-
-        if (homeTab != null) {
-            homeTab.setOnClickListener(v -> {
-                // Already on Dashboard, no action or refresh if desired
-                // For now, no action.
-            });
-        }
-        if (optionsTab != null) {
-            optionsTab.setOnClickListener(v -> {
-                startActivity(new Intent(this, SettingsActivity.class));
-                // Do not finish Dashboard
-            });
-        }
-        if (alertsTab != null) {
-            alertsTab.setOnClickListener(v -> {
-                startActivity(new Intent(this, AlertsActivity.class));
-                // Do not finish Dashboard
-            });
-        }
+        // Updated to use IDs from included layout.
+        // Home is the active tab (no navigation); the others navigate.
+        setupNavTab(findViewById(R.id.top_navigation_bar), R.id.nav_home_text, R.color.secondary, null);
+        setupNavTab(findViewById(R.id.top_navigation_bar), R.id.nav_options_text, R.color.text_primary, new Intent(this, SettingsActivity.class));
+        setupNavTab(findViewById(R.id.top_navigation_bar), R.id.nav_alerts_text, R.color.text_primary, new Intent(this, AlertsActivity.class));
 
         // refreshData will call getTList and getTChart
     }
@@ -379,11 +393,14 @@ public class Dashboard extends BaseActivity {
             .setPositiveButton("Upload to Drive", (d,w) -> {
                 showProgressDialog("Uploading backup...");
                 backupManager.performSync(false)
-                    .addOnSuccessListener(r -> {
-                        hideProgressDialog();
-                        Toast.makeText(this,
-                            "Backup uploaded successfully",
-                            Toast.LENGTH_SHORT).show();
+                    .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void r) {
+                            hideProgressDialog();
+                            Toast.makeText(Dashboard.this,
+                                "Backup uploaded successfully",
+                                Toast.LENGTH_SHORT).show();
+                        }
                     })
                     .addOnFailureListener(e -> {
                         hideProgressDialog();
@@ -399,12 +416,15 @@ public class Dashboard extends BaseActivity {
                     .setPositiveButton("Yes", (d2,w2) -> {
                         showProgressDialog("Restoring from backup...");
                         backupManager.performSync(true)
-                            .addOnSuccessListener(r -> {
-                                hideProgressDialog();
-                                refreshData(currentFilterStartDate, currentFilterEndDate);
-                                Toast.makeText(this,
-                                    "Restore completed successfully",
-                                    Toast.LENGTH_SHORT).show();
+                            .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void r) {
+                                    hideProgressDialog();
+                                    refreshData(currentFilterStartDate, currentFilterEndDate);
+                                    Toast.makeText(Dashboard.this,
+                                        "Restore completed successfully",
+                                        Toast.LENGTH_SHORT).show();
+                                }
                             })
                             .addOnFailureListener(e -> {
                                 hideProgressDialog();
@@ -452,16 +472,6 @@ public class Dashboard extends BaseActivity {
         expense.setText("€ " + Utils.expense);
         getTList(startDate, endDate); // Pass filter dates
         getTChart(); // Uses updated Utils.income/expense
-    }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        Intent i = new Intent(this, MainActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        i.putExtra("Exit me", true);
-        startActivity(i);
-        super.onBackPressed();
     }
 
     @Override

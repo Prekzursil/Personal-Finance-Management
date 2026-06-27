@@ -29,7 +29,11 @@ public class SplashActivity extends BaseActivity {
         }
 
         ImageView imageView = findViewById(R.id.imageView);  // id matches layout
-        Glide.with(this).load(R.raw.loading).into(imageView);
+        // Load the loading GIF via its resource Uri so the load() overload is
+        // unambiguously load(Uri).
+        android.net.Uri gifUri = android.net.Uri.parse(
+                "android.resource://" + getPackageName() + "/" + R.raw.loading);
+        Glide.with(this).asGif().load(gifUri).into(imageView);
 
         new Handler().postDelayed(() -> {
             Intent intent = new Intent(SplashActivity.this, Dashboard.class);

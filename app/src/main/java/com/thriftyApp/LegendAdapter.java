@@ -72,10 +72,13 @@ public class LegendAdapter extends ListAdapter<PieEntry, LegendAdapter.LegendVie
         LegendViewHolder(@NonNull View itemView, OnLegendItemClickListener listener) {
             super(itemView);
             chip = itemView.findViewById(R.id.chip);
-            chip.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    listener.onItemClick(position);
+            chip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        listener.onItemClick(position);
+                    }
                 }
             });
         }

@@ -1,6 +1,5 @@
 package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,6 +7,7 @@ import com.thriftyApp.BaseActivity;
 import com.thriftyApp.Transactions;
 
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -35,6 +35,14 @@ public class PayActivity extends BaseActivity {
 
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_pay);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent (getApplicationContext (),TransactionsActivity.class);
+                startActivity (intent);
+                finish ();
+            }
+        });
 
 
         databaseHelper = new DatabaseHelper (this);
@@ -67,22 +75,31 @@ public class PayActivity extends BaseActivity {
             pay.setText(String.valueOf(amountVal));
             tag.setText(intent.getStringExtra("tag"));
             addExpense.setImageResource(android.R.drawable.ic_menu_save);
-                addExpense.setOnClickListener(v -> {
-                    Transactions t = new Transactions();
-                    t.setTid(editId);
-                    t.setExin(0);
-                    Double d2 = Double.parseDouble(pay.getText().toString());
-                    t.setAmount(Math.round(d2));
-                    t.setTag(tag.getText().toString());
-                    String created = intent.getStringExtra("created_at");
-                    t.setCreated_at(created != null ? created :
-                        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
-                    databaseHelper.updateTransaction(t);
-                    boolean fromAll = intent.getBooleanExtra("from_all", false);
-                    Intent returnIntent = new Intent(getApplicationContext(),
-                        fromAll ? TransactionsActivity.class : Dashboard.class);
-                    startActivity(returnIntent);
-                    finish();
+                addExpense.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        double d2;
+                        try {
+                            d2 = Double.parseDouble(pay.getText().toString());
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(getApplicationContext(), "Enter a valid amount.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Transactions t = new Transactions();
+                        t.setTid(editId);
+                        t.setExin(0);
+                        t.setAmount(Math.round(d2));
+                        t.setTag(tag.getText().toString());
+                        String created = intent.getStringExtra("created_at");
+                        t.setCreated_at(created != null ? created :
+                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
+                        databaseHelper.updateTransaction(t);
+                        boolean fromAll = intent.getBooleanExtra("from_all", false);
+                        Intent returnIntent = new Intent(getApplicationContext(),
+                            fromAll ? TransactionsActivity.class : Dashboard.class);
+                        startActivity(returnIntent);
+                        finish();
+                    }
                 });
         }
 
@@ -93,11 +110,14 @@ public class PayActivity extends BaseActivity {
         dateTextView.setText(formattedDate);
 
         if (editId == -1) {
-            addExpense.setOnClickListener(v -> {
-                if (pay.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
-                    Toast.makeText(getApplicationContext(),"Enter valid amount and tag.",Toast.LENGTH_SHORT).show();
-                } else {
-                    addPay();
+            addExpense.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (pay.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
+                        Toast.makeText(getApplicationContext(),"Enter valid amount and tag.",Toast.LENGTH_SHORT).show();
+                    } else {
+                        addPay();
+                    }
                 }
             });
         }
@@ -188,19 +208,25 @@ public class PayActivity extends BaseActivity {
     }
 
     public void addPay () {
+        double d;
+        try {
+            d = Double.parseDouble (pay.getText ().toString ());
+        } catch (NumberFormatException e) {
+            Toast.makeText (getApplicationContext (), "Enter a valid amount.", Toast.LENGTH_SHORT).show ();
+            return;
+        }
         Transactions t = new Transactions ();
         t.setExin (0);
-        Double d = Double.parseDouble (pay.getText ().toString ());
-        Log.i("Omg", d.toString ());
+        Log.i("Omg", String.valueOf (d));
         long l = Math.round (d);
         t.setAmount (l);
         t.setTag (tag.getText ().toString ());
-        t.setUid (Integer.parseInt (Utils.userId));
+        t.setUid (Utils.safeParseInt (Utils.userId, 0));
         databaseHelper.insertTransaction (t);
         databaseHelper.getTransactions ();
         databaseHelper.setIncomeExpenses (null, null);
         int exp = Utils.expense;
-        int bud = Integer.parseInt (Utils.budget);
+        int bud = Utils.safeParseInt (Utils.budget, 0);
         Log.i("Alert build", bud*0.5 +" "+ exp);
         if (exp > (bud/2)) {
             Toast.makeText (getApplicationContext (),"Added Expense", Toast.LENGTH_SHORT).show ();
@@ -212,15 +238,6 @@ public class PayActivity extends BaseActivity {
             finish ( );
         }
     }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent (getApplicationContext (),TransactionsActivity.class);
-        startActivity (intent);
-        finish ();
-    }
-
 
     public void buildAlertExpense () {
 

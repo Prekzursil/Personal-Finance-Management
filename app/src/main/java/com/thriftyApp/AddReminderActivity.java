@@ -1,6 +1,5 @@
  package com.thriftyApp;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.AlertDialog; // Import AlertDialog
 import android.app.DatePickerDialog;
@@ -13,7 +12,9 @@ import android.content.pm.PackageManager; // For permission check
 import android.net.Uri; // For settings intent
 import android.os.Build; // For version checks
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.provider.Settings; // For settings intent
+import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -51,6 +52,13 @@ public class AddReminderActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_reminder);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                startActivity(new Intent(getApplicationContext(), AlertsActivity.class));
+                finish();
+            }
+        });
 
         // Initialize the ActivityResultLauncher for notification permission
         requestNotificationPermissionLauncher =
@@ -133,7 +141,12 @@ public class AddReminderActivity extends BaseActivity {
             finish();
         });
 
-        fab.setOnClickListener(v -> checkPermissionsAndSave());
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkPermissionsAndSave();
+            }
+        });
     }
 
     private void checkPermissionsAndSave() {
@@ -175,13 +188,6 @@ public class AddReminderActivity extends BaseActivity {
         }
     }
 
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        startActivity(new Intent(getApplicationContext(), AlertsActivity.class));
-        finish();
-    }
 
     // Renamed original saveAndSchedule to saveAndScheduleInternal
     private void saveAndScheduleInternal() {
