@@ -189,17 +189,12 @@ public class TransactionsActivity extends BaseActivity {
 
         populateTimeFilterSpinner();
         Intent intent = getIntent();
-        String initialStartDate = intent.getStringExtra("START_DATE");
-        String initialEndDate = intent.getStringExtra("END_DATE");
-
-        if (initialStartDate != null && initialEndDate != null) {
-            currentFilterStartDate = initialStartDate;
-            currentFilterEndDate = initialEndDate;
-            // Set spinner to the corresponding period if possible, or default
-            // This part can be complex if trying to match specific month strings.
-            // For now, we'll just use the dates and the spinner will default or be set by user.
-            // A more robust solution would parse these dates and find the matching spinner option.
-        } else {
+        // Use the caller-supplied date range when both extras are present; otherwise
+        // fall back to the current month. (Assigned directly to the filter fields so
+        // there are no redundant intermediate locals.)
+        currentFilterStartDate = intent.getStringExtra("START_DATE");
+        currentFilterEndDate = intent.getStringExtra("END_DATE");
+        if (currentFilterStartDate == null || currentFilterEndDate == null) {
             updateDateFilter(getString(R.string.filter_current_month)); // Default
         }
         // Set spinner selection after populating and potentially receiving intent extras

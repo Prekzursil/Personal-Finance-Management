@@ -98,6 +98,26 @@ public class Dashboard extends BaseActivity {
         return (y >= 128) ? Color.BLACK : Color.WHITE;
     }
 
+    /**
+     * Styles a top-navigation tab and, when {@code target} is non-null, wires it to
+     * open that activity. Centralizing the tab view lookup here keeps onCreate clean.
+     */
+    private void setupNavTab(View navBar, int textViewId, int colorRes, Intent target) {
+        TextView tab = navBar.findViewById(textViewId);
+        if (tab == null) {
+            return;
+        }
+        tab.setTextColor(ContextCompat.getColor(this, colorRes));
+        if (target != null) {
+            tab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(target);
+                }
+            });
+        }
+    }
+
     /* --------------------------------------------------------------- */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,33 +259,10 @@ public class Dashboard extends BaseActivity {
 
         // Updated to use IDs from included layout
         View topNavBar = findViewById(R.id.top_navigation_bar);
-        TextView homeTab    = topNavBar.findViewById(R.id.nav_home_text);
-        TextView optionsTab = topNavBar.findViewById(R.id.nav_options_text);
-        TextView alertsTab  = topNavBar.findViewById(R.id.nav_alerts_text);
-
-        // Set active/inactive tab colors
-        if (homeTab != null) homeTab.setTextColor(ContextCompat.getColor(this, R.color.secondary)); // Active tab
-        if (optionsTab != null) optionsTab.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Inactive
-        if (alertsTab != null) alertsTab.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Inactive
-
-        if (homeTab != null) {
-            homeTab.setOnClickListener(v -> {
-                // Already on Dashboard, no action or refresh if desired
-                // For now, no action.
-            });
-        }
-        if (optionsTab != null) {
-            optionsTab.setOnClickListener(v -> {
-                startActivity(new Intent(this, SettingsActivity.class));
-                // Do not finish Dashboard
-            });
-        }
-        if (alertsTab != null) {
-            alertsTab.setOnClickListener(v -> {
-                startActivity(new Intent(this, AlertsActivity.class));
-                // Do not finish Dashboard
-            });
-        }
+        // Home is the active tab (no navigation); the others navigate.
+        setupNavTab(topNavBar, R.id.nav_home_text, R.color.secondary, null);
+        setupNavTab(topNavBar, R.id.nav_options_text, R.color.text_primary, new Intent(this, SettingsActivity.class));
+        setupNavTab(topNavBar, R.id.nav_alerts_text, R.color.text_primary, new Intent(this, AlertsActivity.class));
 
         // refreshData will call getTList and getTChart
     }
