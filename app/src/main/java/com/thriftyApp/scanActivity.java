@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.util.Log;
 import android.graphics.RectF; // Import for roiRectView
 import android.view.View;
@@ -77,6 +78,12 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        });
 
         proceed = findViewById(R.id.proceedButton);
         cameraPreviewView = findViewById(R.id.cameraPreviewView);
@@ -426,12 +433,6 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
         }
         intent.putExtra ("ocr", amountStr);
         startActivity(intent);
-        finish();
-    }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
         finish();
     }
 

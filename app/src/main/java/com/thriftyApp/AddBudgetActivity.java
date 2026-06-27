@@ -3,6 +3,7 @@ package com.thriftyApp;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import com.thriftyApp.BaseActivity;
 import android.view.View;
 import android.widget.EditText;
@@ -19,6 +20,15 @@ public class AddBudgetActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_add_budget);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // Redirect to SettingsActivity as "Change Budget" is now accessed from there
+                Intent intent = new Intent (getApplicationContext (),SettingsActivity.class);
+                startActivity (intent);
+                finish ();
+            }
+        });
         databaseHelper = new DatabaseHelper (this);
         budgetEdit = findViewById (R.id.budAmountEditText);
 
@@ -53,14 +63,5 @@ public class AddBudgetActivity extends BaseActivity {
                 }
             }
         });
-    }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        // Redirect to SettingsActivity as "Change Budget" is now accessed from there
-        Intent intent = new Intent (getApplicationContext (),SettingsActivity.class);
-        startActivity (intent);
-        finish ();
     }
 }

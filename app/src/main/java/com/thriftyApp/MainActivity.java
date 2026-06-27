@@ -3,6 +3,7 @@ package com.thriftyApp;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import com.thriftyApp.BaseActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -27,6 +28,22 @@ public class MainActivity extends BaseActivity {
 			return; // add this to prevent from doing unnecessary stuffs
 		}
 		fragmentManager = getSupportFragmentManager();
+
+		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				// Find the tag of sign up and forgot password fragment
+				Fragment SignUp_Fragment = fragmentManager
+						.findFragmentByTag(Utils.SignUp_Fragment);
+
+				// If the sign-up fragment is showing, return to login; otherwise
+				// perform the default back (finish this root activity).
+				if (SignUp_Fragment != null)
+					replaceLoginFragment();
+				else
+					finish();
+			}
+		});
 
 		// If saved instance state is null then replace login fragment
 		if (savedInstanceState == null) {
@@ -56,24 +73,6 @@ public class MainActivity extends BaseActivity {
 				.setCustomAnimations(R.anim.left_enter, R.anim.right_out)
 				.replace(R.id.frameContainer, new Login_Fragment(),
 						Utils.Login_Fragment).commit();
-	}
-
-	@SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-
-		// Find the tag of sign up and forgot password fragment
-		Fragment SignUp_Fragment = fragmentManager
-				.findFragmentByTag(Utils.SignUp_Fragment);
-
-		// Check if both are null or not
-		// If both are not null then replace login fragment else do back pressed
-		// task
-
-		if (SignUp_Fragment != null)
-			replaceLoginFragment();
-		else
-			super.onBackPressed();
 	}
 
 	public void moveToSplash () {

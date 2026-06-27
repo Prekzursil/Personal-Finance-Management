@@ -6,6 +6,7 @@ import com.thriftyApp.BaseActivity;
 import com.thriftyApp.Transactions;
 
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -29,6 +30,14 @@ public class TakeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_take);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent (getApplicationContext (),TransactionsActivity.class);
+                startActivity (intent);
+                finish ();
+            }
+        });
 
         take =  findViewById (R.id.takeEditText);
         tag =  findViewById (R.id.tagEditTextTake);
@@ -103,11 +112,4 @@ public class TakeActivity extends BaseActivity {
         finish ();
     }
 
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent (getApplicationContext (),TransactionsActivity.class);
-        startActivity (intent);
-        finish ();
-    }
 }

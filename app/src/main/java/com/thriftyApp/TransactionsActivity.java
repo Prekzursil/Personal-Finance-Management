@@ -6,6 +6,7 @@ import static androidx.core.content.ContextCompat.startActivity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -103,17 +104,17 @@ public class TransactionsActivity extends BaseActivity {
         pay.setVisibility(vis);
     }
 
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        startActivity(new Intent(this, Dashboard.class));
-        finish();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transactions);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                startActivity(new Intent(TransactionsActivity.this, Dashboard.class));
+                finish();
+            }
+        });
         // if returning from an edit, show list directly
         boolean fromAll = getIntent().getBooleanExtra("from_all", false);
         if (fromAll) {

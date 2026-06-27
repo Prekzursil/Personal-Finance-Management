@@ -3,6 +3,7 @@ package com.thriftyApp;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -103,6 +104,16 @@ public class Dashboard extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent i = new Intent(Dashboard.this, MainActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.putExtra("Exit me", true);
+                startActivity(i);
+                finish();
+            }
+        });
 
         /* ---------- Google-Drive backup bootstrap ---------- */
         if (getIntent().hasExtra("google_account")) {
@@ -452,16 +463,6 @@ public class Dashboard extends BaseActivity {
         expense.setText("€ " + Utils.expense);
         getTList(startDate, endDate); // Pass filter dates
         getTChart(); // Uses updated Utils.income/expense
-    }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        Intent i = new Intent(this, MainActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        i.putExtra("Exit me", true);
-        startActivity(i);
-        super.onBackPressed();
     }
 
     @Override

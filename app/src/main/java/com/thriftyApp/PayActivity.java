@@ -8,6 +8,7 @@ import com.thriftyApp.BaseActivity;
 import com.thriftyApp.Transactions;
 
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -35,6 +36,14 @@ public class PayActivity extends BaseActivity {
 
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_pay);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Intent intent = new Intent (getApplicationContext (),TransactionsActivity.class);
+                startActivity (intent);
+                finish ();
+            }
+        });
 
 
         databaseHelper = new DatabaseHelper (this);
@@ -212,15 +221,6 @@ public class PayActivity extends BaseActivity {
             finish ( );
         }
     }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent (getApplicationContext (),TransactionsActivity.class);
-        startActivity (intent);
-        finish ();
-    }
-
 
     public void buildAlertExpense () {
 
