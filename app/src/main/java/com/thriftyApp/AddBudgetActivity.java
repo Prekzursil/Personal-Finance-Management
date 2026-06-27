@@ -35,8 +35,12 @@ public class AddBudgetActivity extends BaseActivity {
         // Fix: null‑safe
         budgetEdit.setText(Utils.budget == null ? "0" : Utils.budget);
 
-        findViewById(R.id.close_addbud).setOnClickListener(
-                arg0 -> onBackPressed ());
+        findViewById(R.id.close_addbud).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                onBackPressed ();
+            }
+        });
 
         thrifty.setOnClickListener (v -> {
             Intent intent = new Intent (getApplicationContext (), Dashboard.class);

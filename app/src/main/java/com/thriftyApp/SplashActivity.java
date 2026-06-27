@@ -29,7 +29,8 @@ public class SplashActivity extends BaseActivity {
         }
 
         ImageView imageView = findViewById(R.id.imageView);  // id matches layout
-        Glide.with(this).load(R.raw.loading).into(imageView);
+        // Use the explicit Integer (resource-id) overload of RequestManager.load.
+        Glide.with(this).load(Integer.valueOf(R.raw.loading)).into(imageView);
 
         new Handler().postDelayed(() -> {
             Intent intent = new Intent(SplashActivity.this, Dashboard.class);

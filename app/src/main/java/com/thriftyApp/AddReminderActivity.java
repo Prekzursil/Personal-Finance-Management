@@ -14,6 +14,7 @@ import android.os.Build; // For version checks
 import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import android.provider.Settings; // For settings intent
+import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -140,7 +141,12 @@ public class AddReminderActivity extends BaseActivity {
             finish();
         });
 
-        fab.setOnClickListener(v -> checkPermissionsAndSave());
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkPermissionsAndSave();
+            }
+        });
     }
 
     private void checkPermissionsAndSave() {

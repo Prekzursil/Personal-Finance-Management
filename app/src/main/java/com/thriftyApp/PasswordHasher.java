@@ -26,6 +26,7 @@ final class PasswordHasher {
     private static final int KEY_LENGTH_BITS = 256;
     private static final int SALT_LENGTH_BYTES = 16;
     private static final String SEPARATOR = ":";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private PasswordHasher() {
         // Utility class – not instantiable.
@@ -39,7 +40,7 @@ final class PasswordHasher {
         String safePassword = plainPassword == null ? "" : plainPassword;
         try {
             byte[] salt = new byte[SALT_LENGTH_BYTES];
-            new SecureRandom().nextBytes(salt);
+            SECURE_RANDOM.nextBytes(salt);
             byte[] derived = derive(safePassword.toCharArray(), salt);
             return encode(salt) + SEPARATOR + encode(derived);
         } catch (Exception e) {

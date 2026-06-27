@@ -44,8 +44,12 @@ public class TakeActivity extends BaseActivity {
         thrifty = findViewById (R.id.thriftyTitleTake);
 
         addIncome = findViewById (R.id.floatingActionButtonTake);
-        findViewById(R.id.close_take).setOnClickListener(
-                arg0 -> onBackPressed ());
+        findViewById(R.id.close_take).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                onBackPressed ();
+            }
+        });
 
         // Edit mode if transaction_id passed
         Intent intent = getIntent();
@@ -55,30 +59,33 @@ public class TakeActivity extends BaseActivity {
             take.setText(String.valueOf(amountVal));
             tag.setText(intent.getStringExtra("tag"));
             addIncome.setImageResource(android.R.drawable.ic_menu_save);
-            addIncome.setOnClickListener(v -> {
-                double d2;
-                try {
-                    d2 = Double.parseDouble(take.getText().toString());
-                } catch (NumberFormatException e) {
-                    Toast.makeText(getApplicationContext(), "Enter a valid amount.", Toast.LENGTH_SHORT).show();
-                    return;
+            addIncome.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    double d2;
+                    try {
+                        d2 = Double.parseDouble(take.getText().toString());
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getApplicationContext(), "Enter a valid amount.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Transactions t = new Transactions();
+                    t.setTid(editId);
+                    t.setExin(1);
+                    t.setAmount(Math.round(d2));
+                    t.setTag(tag.getText().toString());
+                    String created = intent.getStringExtra("created_at");
+                    t.setCreated_at(created != null
+                        ? created
+                        : new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            .format(new Date()));
+                    databaseHelper.updateTransaction(t);
+                    boolean fromAll = intent.getBooleanExtra("from_all", false);
+                    Intent returnIntent = new Intent(getApplicationContext(),
+                        fromAll ? TransactionsActivity.class : Dashboard.class);
+                    startActivity(returnIntent);
+                    finish();
                 }
-                Transactions t = new Transactions();
-                t.setTid(editId);
-                t.setExin(1);
-                t.setAmount(Math.round(d2));
-                t.setTag(tag.getText().toString());
-                String created = intent.getStringExtra("created_at");
-                t.setCreated_at(created != null
-                    ? created
-                    : new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                        .format(new Date()));
-                databaseHelper.updateTransaction(t);
-                boolean fromAll = intent.getBooleanExtra("from_all", false);
-                Intent returnIntent = new Intent(getApplicationContext(),
-                    fromAll ? TransactionsActivity.class : Dashboard.class);
-                startActivity(returnIntent);
-                finish();
             });
         }
 
@@ -88,11 +95,14 @@ public class TakeActivity extends BaseActivity {
         String formattedDate = dateFormat.format(new Date());
         dateTextView.setText(formattedDate); 
 
-        addIncome.setOnClickListener(v -> {
-            if (take.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Enter valid amount and tag.", Toast.LENGTH_SHORT).show();
-            } else {
-                addTake();
+        addIncome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (take.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "Enter valid amount and tag.", Toast.LENGTH_SHORT).show();
+                } else {
+                    addTake();
+                }
             }
         });
 

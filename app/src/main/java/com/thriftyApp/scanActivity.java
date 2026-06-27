@@ -139,23 +139,26 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
     }
 
     private void setupTapToFocus() {
-        cameraPreviewView.setOnTouchListener((view, motionEvent) -> {
-            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                if (camera == null) {
-                    Log.d(TAG, "Camera object is null, cannot start focus.");
-                    return true;
+        cameraPreviewView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    if (camera == null) {
+                        Log.d(TAG, "Camera object is null, cannot start focus.");
+                        return true;
+                    }
+                    MeteringPointFactory factory = cameraPreviewView.getMeteringPointFactory();
+                    MeteringPoint point = factory.createPoint(motionEvent.getX(), motionEvent.getY());
+                    FocusMeteringAction action = new FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF).build();
+                    try {
+                        camera.getCameraControl().startFocusAndMetering(action);
+                        Log.d(TAG, "Tap-to-focus action started.");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Tap-to-focus failed.", e);
+                    }
                 }
-                MeteringPointFactory factory = cameraPreviewView.getMeteringPointFactory();
-                MeteringPoint point = factory.createPoint(motionEvent.getX(), motionEvent.getY());
-                FocusMeteringAction action = new FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF).build();
-                try {
-                    camera.getCameraControl().startFocusAndMetering(action);
-                    Log.d(TAG, "Tap-to-focus action started.");
-                } catch (Exception e) {
-                    Log.e(TAG, "Tap-to-focus failed.", e);
-                }
+                return true;
             }
-            return true;
         });
     }
 
@@ -328,40 +331,19 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                         proceed.setEnabled(false);
                         Toast.makeText(scanActivity.this, "Text recognition failed.", Toast.LENGTH_SHORT).show();
                     })
-                    .addOnCompleteListener(task -> {
-                        if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) {
-                            finalBitmapUsedByMLKit.recycle();
-                            Log.d(TAG, "Recycled cropped bitmap (finalBitmapUsedByMLKit).");
-                        }
-                        if (!finalOriginalBitmapForLambda.isRecycled()) {
-                            // If it was cropped, original is different and needs recycling.
-                            // If not cropped, finalBitmapUsedByMLKit IS finalOriginalBitmapForLambda.
-                            // So, only recycle original if it's different from what was processed OR if it was processed and not cropped.
-                            if (finalWasCropped || (finalOriginalBitmapForLambda == finalBitmapUsedByMLKit && !finalBitmapUsedByMLKit.isRecycled())) {
-                                // Avoid double recycling if original was processed and already handled by finalBitmapUsedByMLKit logic
-                                if (finalOriginalBitmapForLambda != finalBitmapUsedByMLKit || !finalWasCropped) {
-                                     finalOriginalBitmapForLambda.recycle();
-                                     Log.d(TAG, "Recycled originalBitmapFromProxy.");
-                                }
-                            } else if (!finalWasCropped && finalOriginalBitmapForLambda == finalBitmapUsedByMLKit && !finalBitmapUsedByMLKit.isRecycled()){
-                                // This case should be covered by the above, but for clarity:
-                                // if original was used and not cropped, it's the same as finalBitmapUsedByMLKit.
-                                // If finalBitmapUsedByMLKit was recycled, this is fine. If not, it means it wasn't cropped.
-                                // The logic here is to ensure original is recycled if it's not the one that was processed and recycled.
-                                // Let's simplify: if original is not the one that was fed to MLKit (because a crop happened), recycle original.
-                                // If original *was* fed to MLKit, then finalBitmapUsedByMLKit is original, and it will be recycled if not already.
-                                // This is still a bit tricky. The goal:
-                                // 1. If cropped: recycle cropped, recycle original.
-                                // 2. If not cropped: recycle original (which is also finalBitmapUsedByMLKit).
-                                // The current logic:
-                                // if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) -> recycles cropped
-                                // if (finalOriginalBitmapForLambda != null && !finalOriginalBitmapForLambda.isRecycled()) -> this will try to recycle original
-                                // This might lead to double recycle if not cropped.
-                                // Corrected logic:
-                                // 1. Recycle the bitmap that was fed to MLKit if it was a *new* (cropped) bitmap.
-                                // 2. Always recycle the original bitmap from the proxy.
-                                // This means if no cropping happened, original is fed, then original is recycled.
-                                // If cropping happened, cropped is fed, cropped is recycled, original is recycled.
+                    .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<Text>() {
+                        @Override
+                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<Text> task) {
+                            // If a cropped bitmap was fed to ML Kit, recycle it (guard: only a
+                            // successful crop creates it). Then recycle the original; when no crop
+                            // happened the original IS the bitmap fed to ML Kit, so it is recycled once.
+                            if (finalWasCropped && finalBitmapUsedByMLKit != null && !finalBitmapUsedByMLKit.isRecycled()) {
+                                finalBitmapUsedByMLKit.recycle();
+                                Log.d(TAG, "Recycled cropped bitmap (finalBitmapUsedByMLKit).");
+                            }
+                            if (!finalOriginalBitmapForLambda.isRecycled()) {
+                                finalOriginalBitmapForLambda.recycle();
+                                Log.d(TAG, "Recycled originalBitmapFromProxy.");
                             }
                         }
                     });
@@ -511,7 +493,12 @@ public class scanActivity extends BaseActivity implements GraphicOverlay.OnGraph
                         }
                     })
                     .addOnFailureListener(e -> Log.e(TAG, "Text recognition from analyzer failed.", e))
-                    .addOnCompleteListener(task -> imageProxy.close());
+                    .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<Text>() {
+                        @Override
+                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<Text> task) {
+                            imageProxy.close();
+                        }
+                    });
             } else {
                 imageProxy.close();
             }

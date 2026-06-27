@@ -29,24 +29,33 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         Preference changeBudgetPref = findPreference("pref_change_budget");
 
         if (backupPref != null) {
-            backupPref.setOnPreferenceClickListener(preference -> {
-                backupManager.performSync(false);
-                return true;
+            backupPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(@NonNull Preference preference) {
+                    backupManager.performSync(false);
+                    return true;
+                }
             });
         }
 
         if (restorePref != null) {
-            restorePref.setOnPreferenceClickListener(preference -> {
-                backupManager.performSync(true);
-                return true;
+            restorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(@NonNull Preference preference) {
+                    backupManager.performSync(true);
+                    return true;
+                }
             });
         }
 
         if (changeBudgetPref != null) {
-            changeBudgetPref.setOnPreferenceClickListener(preference -> {
-                Intent intent = new Intent(requireContext(), AddBudgetActivity.class);
-                startActivity(intent);
-                return true;
+            changeBudgetPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(@NonNull Preference preference) {
+                    Intent intent = new Intent(requireContext(), AddBudgetActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
             });
         }
     }

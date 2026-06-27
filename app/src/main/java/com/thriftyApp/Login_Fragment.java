@@ -35,6 +35,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.AuthCredential;
@@ -107,9 +108,12 @@ public class Login_Fragment extends Fragment implements OnClickListener {
                 .build();
         GoogleSignIn.getClient(requireActivity(), gsoCleanup)
                 .signOut()
-                .addOnCompleteListener(requireActivity(), task -> {
-                    // optionally revoke access: 
-                    GoogleSignIn.getClient(requireActivity(), gsoCleanup).revokeAccess();
+                .addOnCompleteListener(requireActivity(), new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // optionally revoke access:
+                        GoogleSignIn.getClient(requireActivity(), gsoCleanup).revokeAccess();
+                    }
                 });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

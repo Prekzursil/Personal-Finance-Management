@@ -122,11 +122,14 @@ public class Dashboard extends BaseActivity {
 
             showProgressDialog("Initializing backup...");
             backupManager.performSync(true)
-                .addOnSuccessListener(result -> {
-                    hideProgressDialog();
-                    Toast.makeText(this,
-                        "Initial sync completed", Toast.LENGTH_SHORT).show();
-                    refreshData(currentFilterStartDate, currentFilterEndDate);
+                .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        hideProgressDialog();
+                        Toast.makeText(Dashboard.this,
+                            "Initial sync completed", Toast.LENGTH_SHORT).show();
+                        refreshData(currentFilterStartDate, currentFilterEndDate);
+                    }
                 })
                 .addOnFailureListener(e -> {
                     hideProgressDialog();
@@ -141,7 +144,12 @@ public class Dashboard extends BaseActivity {
             if (account != null) {
                 backupManager = new BackupManager(this, account);
                 backupManager.performSync(false)
-                    .addOnSuccessListener(r -> refreshData(currentFilterStartDate, currentFilterEndDate))
+                    .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void r) {
+                            refreshData(currentFilterStartDate, currentFilterEndDate);
+                        }
+                    })
                     .addOnFailureListener(e ->
                         Log.e("Dashboard",
                             "Background sync failed: " + e.getMessage()));
@@ -389,11 +397,14 @@ public class Dashboard extends BaseActivity {
             .setPositiveButton("Upload to Drive", (d,w) -> {
                 showProgressDialog("Uploading backup...");
                 backupManager.performSync(false)
-                    .addOnSuccessListener(r -> {
-                        hideProgressDialog();
-                        Toast.makeText(this,
-                            "Backup uploaded successfully",
-                            Toast.LENGTH_SHORT).show();
+                    .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void r) {
+                            hideProgressDialog();
+                            Toast.makeText(Dashboard.this,
+                                "Backup uploaded successfully",
+                                Toast.LENGTH_SHORT).show();
+                        }
                     })
                     .addOnFailureListener(e -> {
                         hideProgressDialog();
@@ -409,12 +420,15 @@ public class Dashboard extends BaseActivity {
                     .setPositiveButton("Yes", (d2,w2) -> {
                         showProgressDialog("Restoring from backup...");
                         backupManager.performSync(true)
-                            .addOnSuccessListener(r -> {
-                                hideProgressDialog();
-                                refreshData(currentFilterStartDate, currentFilterEndDate);
-                                Toast.makeText(this,
-                                    "Restore completed successfully",
-                                    Toast.LENGTH_SHORT).show();
+                            .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void r) {
+                                    hideProgressDialog();
+                                    refreshData(currentFilterStartDate, currentFilterEndDate);
+                                    Toast.makeText(Dashboard.this,
+                                        "Restore completed successfully",
+                                        Toast.LENGTH_SHORT).show();
+                                }
                             })
                             .addOnFailureListener(e -> {
                                 hideProgressDialog();

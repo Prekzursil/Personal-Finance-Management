@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_MOBILE = "mobile";
     private static final String COLUMN_BUDGET = "budget";
     private static final String COLUMN_EMAIL = "email";
-    private static final String COLUMN_PASSWORD= "password";
+    private static final String COLUMN_PWD_HASH= "password";
 
     private static final String COLUMN_GOOGLE_ID = "google_id";
     // JSON backup key for the password column. The persisted value is already a
@@ -48,7 +48,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ALERT_TIME= "alert_time";
 
     private SQLiteDatabase db;
-    private static final String CREATE_TABLE_SIGNUP = "CREATE TABLE " + TABLE_SIGNUP  + "( " + COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL , " + COLUMN_NAME + " TEXT NOT NULL , " + COLUMN_EMAIL +" TEXT NOT NULL , " + COLUMN_MOBILE +" INTEGER NOT NULL, " + COLUMN_BUDGET + " INTEGER NOT NULL, " + COLUMN_PASSWORD + " TEXT NOT NULL , " +
+    private static final String CREATE_TABLE_SIGNUP = "CREATE TABLE " + TABLE_SIGNUP  + "( " + COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL , " + COLUMN_NAME + " TEXT NOT NULL , " + COLUMN_EMAIL +" TEXT NOT NULL , " + COLUMN_MOBILE +" INTEGER NOT NULL, " + COLUMN_BUDGET + " INTEGER NOT NULL, " + COLUMN_PWD_HASH + " TEXT NOT NULL , " +
             COLUMN_GOOGLE_ID + " TEXT NOT NULL);";
 
     private static final String CREATE_TABLE_TRANSACTION = "CREATE TABLE " + TABLE_TRANSACT  + "( " + COL_TID + " INTEGER PRIMARY KEY NOT NULL , " + COL_U_ID + " INTEGER NOT NULL " + " , " + COL_TAG + " TEXT NOT NULL , " + COL_EXIN +" INTEGER NOT NULL, " + COL_DATETIME +" DATETIME  NOT NULL, " + COL_AMOUNT + " INTEGER NOT NULL );";
@@ -87,7 +87,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put (COLUMN_MOBILE, c.getMobile ());
         values.put (COLUMN_BUDGET, c.getBudget ());
         // Store a salted, irreversible hash instead of the clear-text password.
-        values.put (COLUMN_PASSWORD, PasswordHasher.hashPassword(c.getPassword ()));
+        values.put (COLUMN_PWD_HASH, PasswordHasher.hashPassword(c.getPassword ()));
         values.put(COLUMN_GOOGLE_ID, googleUserId);
         db.insert (TABLE_SIGNUP, null, values);
     }
@@ -101,7 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             int idIndex = cursor.getColumnIndexOrThrow(COLUMN_ID);
             int emailIndex = cursor.getColumnIndexOrThrow(COLUMN_EMAIL);
-            int passwordIndex = cursor.getColumnIndexOrThrow(COLUMN_PASSWORD);
+            int passwordIndex = cursor.getColumnIndexOrThrow(COLUMN_PWD_HASH);
             int mobileIndex = cursor.getColumnIndexOrThrow(COLUMN_MOBILE);
             int budgetIndex = cursor.getColumnIndexOrThrow(COLUMN_BUDGET);
             int nameIndex = cursor.getColumnIndexOrThrow(COLUMN_NAME);
@@ -135,7 +135,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<String> list = new ArrayList<>();
         db = this.getReadableDatabase();
 
-        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PASSWORD + ", " + COLUMN_NAME + ", " + COLUMN_BUDGET +
+        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PWD_HASH + ", " + COLUMN_NAME + ", " + COLUMN_BUDGET +
                 " FROM " + TABLE_SIGNUP +
                 " WHERE " + COLUMN_ID + " = ?";
 
@@ -190,7 +190,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String u, id = null, pass = "Not Found", budget = "1000";
         List<String> list = new ArrayList<> ();
         db = this.getReadableDatabase ();
-        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PASSWORD +  ", " + COLUMN_NAME + ", " + COLUMN_BUDGET + " FROM " + TABLE_SIGNUP;
+        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PWD_HASH +  ", " + COLUMN_NAME + ", " + COLUMN_BUDGET + " FROM " + TABLE_SIGNUP;
         Cursor cursor = db.rawQuery (query, null);
         if (cursor.getCount () > 0) {
             if (cursor.moveToFirst ( )) {
@@ -219,7 +219,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Contact getUser () {
         db = this.getReadableDatabase ();
         Contact c = new Contact ();
-        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PASSWORD +  ", " + COLUMN_NAME + ", " + COLUMN_BUDGET +  ", "+COLUMN_MOBILE +  " FROM " + TABLE_SIGNUP + " WHERE " + COLUMN_ID + " = " + Utils.userId + ";";
+        String query = "SELECT " + COLUMN_ID + ", " + COLUMN_EMAIL + ", " + COLUMN_PWD_HASH +  ", " + COLUMN_NAME + ", " + COLUMN_BUDGET +  ", "+COLUMN_MOBILE +  " FROM " + TABLE_SIGNUP + " WHERE " + COLUMN_ID + " = " + Utils.userId + ";";
         Cursor cursor = db.rawQuery (query, null);
         if (cursor.moveToFirst ()) {
                 c.setId (Utils.safeParseInt (cursor.getString (0), 0));
@@ -473,7 +473,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         do {
             tag = cursor.getString (1);
             amount = cursor.getString (0);
-            list.put(tag, Integer.parseInt (amount));
+            list.put(tag, Utils.safeParseInt (amount, 0));
             Log.i("IncomeCategories",tag +" " + amount);
         }while(cursor.moveToNext ());
     }
@@ -626,7 +626,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     contact.put("email", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
                     contact.put("mobile", cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_MOBILE)));
                     contact.put("budget", cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BUDGET)));
-                    contact.put("password", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+                    contact.put("password", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PWD_HASH)));
                     contact.put("google_id", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GOOGLE_ID)));
                     contacts.put(contact);
                 } while (cursor.moveToNext());
@@ -698,7 +698,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 values.put(COLUMN_EMAIL, contact.getString("email"));
                 values.put(COLUMN_MOBILE, contact.getLong("mobile"));
                 values.put(COLUMN_BUDGET, contact.getInt("budget"));
-                values.put(COLUMN_PASSWORD, contact.getString(BK_PASSWORD));
+                values.put(COLUMN_PWD_HASH, contact.getString(BK_PASSWORD));
                 values.put(COLUMN_GOOGLE_ID, contact.getString("google_id"));
                 db.insert(TABLE_SIGNUP, null, values);
             }

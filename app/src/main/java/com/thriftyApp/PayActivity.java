@@ -75,28 +75,31 @@ public class PayActivity extends BaseActivity {
             pay.setText(String.valueOf(amountVal));
             tag.setText(intent.getStringExtra("tag"));
             addExpense.setImageResource(android.R.drawable.ic_menu_save);
-                addExpense.setOnClickListener(v -> {
-                    double d2;
-                    try {
-                        d2 = Double.parseDouble(pay.getText().toString());
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(getApplicationContext(), "Enter a valid amount.", Toast.LENGTH_SHORT).show();
-                        return;
+                addExpense.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        double d2;
+                        try {
+                            d2 = Double.parseDouble(pay.getText().toString());
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(getApplicationContext(), "Enter a valid amount.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Transactions t = new Transactions();
+                        t.setTid(editId);
+                        t.setExin(0);
+                        t.setAmount(Math.round(d2));
+                        t.setTag(tag.getText().toString());
+                        String created = intent.getStringExtra("created_at");
+                        t.setCreated_at(created != null ? created :
+                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
+                        databaseHelper.updateTransaction(t);
+                        boolean fromAll = intent.getBooleanExtra("from_all", false);
+                        Intent returnIntent = new Intent(getApplicationContext(),
+                            fromAll ? TransactionsActivity.class : Dashboard.class);
+                        startActivity(returnIntent);
+                        finish();
                     }
-                    Transactions t = new Transactions();
-                    t.setTid(editId);
-                    t.setExin(0);
-                    t.setAmount(Math.round(d2));
-                    t.setTag(tag.getText().toString());
-                    String created = intent.getStringExtra("created_at");
-                    t.setCreated_at(created != null ? created :
-                        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
-                    databaseHelper.updateTransaction(t);
-                    boolean fromAll = intent.getBooleanExtra("from_all", false);
-                    Intent returnIntent = new Intent(getApplicationContext(),
-                        fromAll ? TransactionsActivity.class : Dashboard.class);
-                    startActivity(returnIntent);
-                    finish();
                 });
         }
 
@@ -107,11 +110,14 @@ public class PayActivity extends BaseActivity {
         dateTextView.setText(formattedDate);
 
         if (editId == -1) {
-            addExpense.setOnClickListener(v -> {
-                if (pay.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
-                    Toast.makeText(getApplicationContext(),"Enter valid amount and tag.",Toast.LENGTH_SHORT).show();
-                } else {
-                    addPay();
+            addExpense.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (pay.getText().toString().isEmpty() || tag.getText().toString().isEmpty()) {
+                        Toast.makeText(getApplicationContext(),"Enter valid amount and tag.",Toast.LENGTH_SHORT).show();
+                    } else {
+                        addPay();
+                    }
                 }
             });
         }
