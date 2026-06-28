@@ -13,3 +13,12 @@
 
 # Java heap dumps
 *.hprof
+
+# Firebase Android config. The real google-services.json carries a live Android
+# API key and is NOT committed. Copy app/google-services.json.template to
+# app/google-services.json and drop in your Firebase config; CI and fresh clones
+# build against the placeholder template (see scripts/verify).
+/app/google-services.json
+
+# Stray AGP build metadata (the real output lives under the ignored build/ tree).
+/app/debug/

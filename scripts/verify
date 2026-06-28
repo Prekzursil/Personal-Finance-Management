@@ -6,5 +6,14 @@ if [[ ! -f ./gradlew || ! -f gradle/wrapper/gradle-wrapper.properties || ! -f gr
   exit 1
 fi
 
+# The real app/google-services.json holds a live Firebase Android API key and is
+# gitignored (see .gitignore). For CI and fresh clones that lack it, bootstrap a
+# build-only config from the committed placeholder template so the google-services
+# Gradle plugin can run. A developer's real local file (if present) is preserved.
+if [[ ! -f app/google-services.json && -f app/google-services.json.template ]]; then
+  echo "google-services.json missing; using placeholder template for the build." >&2
+  cp app/google-services.json.template app/google-services.json
+fi
+
 chmod +x ./gradlew
 ./gradlew --no-daemon testDebugUnitTest lintDebug
