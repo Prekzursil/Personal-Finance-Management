@@ -1,12 +1,10 @@
 {
   // Lean gate (charter 2026-06-16) basedpyright config.
-  // This repo's APPLICATION is pure Java/Android. The only Python in the tree is
-  // the legacy quality-zero-platform (QZT) SaaS helper machinery under scripts/,
-  // which carries its own QZT commit/type contracts and is slated for removal in
-  // the migration runbook -- it is NOT application code the lean type gate should
-  // police. 'include' is therefore scoped to the application source root (app/),
-  // which currently contains no Python, so basedpyright reports 0 diagnostics.
-  // When application Python is added, point 'include' at it.
+  // This repo's APPLICATION is pure Java/Android and currently contains no Python
+  // (the legacy quality-zero-platform helper scripts were removed in the lean-gate
+  // migration). 'include' is scoped to the application source root (app/), which
+  // has no Python, so basedpyright reports 0 diagnostics. When application Python
+  // is added, point 'include' at it.
   "include": [
     "app"
   ],

@@ -1,5 +1,9 @@
 # Progress: Thrifty App
 
+> **Note:** This is a historical development-time analysis snapshot, retained for context.
+> The application has since shipped as **v1.0.0**. The "Known Issues / To Be Built" items
+> below are development-era notes and potential future enhancements, not release blockers.
+
 ## Completed Features (Based on Analysis)
 - **User Authentication:** Signup and Login (Email/Password + Google Sign-In) seem functional (`MainActivity`, `Login_Fragment`, `SignUp_Fragment`, `FirebaseAuth`, `GoogleSignIn`).
 - **Dashboard:** Displays total income/expense, a basic income vs. expense pie chart, and the latest two transactions (`Dashboard.java`, `activity_dashboard.xml`, `DatabaseHelper.setIncomeExpenses`, `getTList`, `getTChart`).

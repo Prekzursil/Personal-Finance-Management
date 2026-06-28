@@ -21,11 +21,9 @@ paths = [
   '''.*\.egg-info/''',
   # Android Gradle wrapper jar (binary, upstream artifact).
   '''(^|/)gradle/wrapper/gradle-wrapper\.jar$''',
-  # Firebase/Google Android CLIENT config. The "api_key.current_key" in this file
-  # is a Google Android API client key, NOT a server secret: it is designed to be
-  # bundled in the shipped APK and is access-restricted by Android package name +
-  # SHA-1 signing-cert fingerprint on the Google side (Google documents committing
-  # google-services.json to source control as safe). Already public in the APK and
-  # in git history; not an undisclosed credential. Reason-dated 2026-06-17.
-  '''(^|/)app/google-services\.json$''',
+  # NOTE: app/google-services.json is no longer committed (gitignored; only the
+  # placeholder app/google-services.json.template ships). It is intentionally NOT
+  # allowlisted here so that a future accidental `git add -f` of a real config
+  # carrying a live Android API key is caught by this gate. The template's
+  # placeholder key does not match any secret pattern.
 ]
