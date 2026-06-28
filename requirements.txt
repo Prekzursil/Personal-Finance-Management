@@ -1,14 +1,14 @@
 # Lean gate (charter 2026-06-16): Python dependency manifest.
 #
-# This repo's APPLICATION is pure Java/Android. The only Python in the tree is the
-# legacy quality-zero-platform (QZT) SaaS helper machinery under scripts/, which
-# imports ONLY the standard library (argparse, json, urllib, pathlib, ipaddress,
-# datetime, typing, base64, ...) -- it has no third-party runtime dependencies.
+# This repo's APPLICATION is pure Java/Android and currently contains NO Python
+# (the legacy quality-zero-platform helper scripts under scripts/ were removed in
+# the lean-gate migration; only the bash scripts/verify remains).
 #
-# This file is intentionally dependency-free. It exists so the lean reusable
-# quality workflow's `actions/setup-python` (cache: pip) step finds a manifest
-# (it requires requirements.txt or pyproject.toml). A requirements.txt does NOT
-# trigger the template's Python coverage lane (that keys off pyproject.toml /
-# setup.cfg / tox.ini), so no coverage gate is introduced for the QZT scripts.
+# This file is intentionally dependency-free. It is retained as forward-looking
+# scaffolding: the lean reusable quality workflow's `actions/setup-python`
+# (cache: pip) step expects a manifest (requirements.txt or pyproject.toml), and
+# osv-scanner uses it as a (currently empty) dependency source. A requirements.txt
+# does NOT trigger the template's Python coverage lane (that keys off
+# pyproject.toml / setup.cfg / tox.ini), so no coverage gate is introduced.
 #
 # Add real pins here if/when application Python with third-party deps is added.

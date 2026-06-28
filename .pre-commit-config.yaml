@@ -1,15 +1,13 @@
-# Lean quality gates -- local auto-fixers + fast checks (charter 2026-06-16).
-# `pre-commit run --all-files` is the gate-1/gate-5 entrypoint used by CI
-# (reusable-quality.yml). Every rev is pinned; bump versions here together with
-# the gate workflow.
+# Lean quality gates -- LOCAL auto-fixers + fast checks (charter 2026-06-16).
+# Install with `pre-commit install`; run on demand with `pre-commit run --all-files`.
+# NOTE: the CI `quality` gate (reusable-quality.yml) is self-contained and runs its
+# OWN pinned CLIs -- it does NOT execute this file. These hooks are a developer
+# convenience that mirrors the gate's intent locally. Every rev is pinned.
 #
-# This repo's APPLICATION is pure Java/Android. The only Python in the tree is the
-# legacy quality-zero-platform (QZT) SaaS helper machinery under scripts/, which
-# carries its own QZT commit/type contracts and is slated for removal in the
-# migration runbook -- it is NOT linted/reformatted by the lean gate (out of scope,
-# would violate QZT's py2-compat contract). The Python lint/format hooks below are
-# therefore scoped to application Python under app/ (none today; ready for future).
-# Java auto-formatting (Spotless) is wired into Gradle, not pre-commit.
+# This repo's APPLICATION is pure Java/Android and currently contains no Python, so
+# the Ruff hooks below (scoped to app/*.py) are inert until application Python is
+# added. The gitleaks hook scans for committed secrets. Java auto-formatting
+# (Spotless) is wired into Gradle, not pre-commit.
 minimum_pre_commit_version: "3.5.0"
 
 default_language_version:
