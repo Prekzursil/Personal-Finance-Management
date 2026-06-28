@@ -3,12 +3,14 @@
 ## Core Technologies
 - **Language:** Java
 - **Platform:** Android
-- **Build System:** Gradle
+- **Build System:** Gradle (Android Gradle Plugin 9.2.1, Gradle wrapper 9.4.1)
+- **Build JDK:** 17 (Temurin); Java source/target compatibility 11
 
 ## Android Configuration
-- **`compileSdk`:** 34
+- **`compileSdk`:** 37
 - **`minSdk`:** 23
-- **`targetSdk`:** 34
+- **`targetSdk`:** 37
+- **`applicationId`:** `com.preethi.thrifty` (namespace `com.thriftyApp`)
 - **Vector Drawables:** Enabled (`useSupportLibrary = true`)
 
 ## Key Libraries & Dependencies
@@ -22,9 +24,10 @@
     - `firebase-auth`: User authentication (email/password and Google Sign-In).
     - `firebase-analytics`: Usage tracking.
     - `firebase-bom`: Bill of Materials for managing Firebase library versions.
-- **Google Play Services:**
+- **Google Play Services & ML Kit:**
     - `play-services-auth`: Authentication services, including Google Sign-In.
-    - `play-services-vision`: Likely used for the OCR functionality (`scanActivity`).
+    - `play-services-vision` + `mlkit:text-recognition`: OCR for the bill-scanning feature (`scanActivity`).
+    - `androidx.camera` (CameraX core/camera2/lifecycle/view): camera preview and capture for scanning.
 - **Charting:**
     - `MPAndroidChart`: Used for displaying pie charts (`Dashboard`, `TransactionsActivity`).
 - **Image Loading:**
@@ -40,7 +43,13 @@
 
 ## Development Setup
 - Standard Android Studio project structure.
-- Requires Google Services configuration (`google-services.json`) for Firebase integration.
+- Requires a Google Services configuration for Firebase integration. The real
+  `app/google-services.json` is gitignored (it carries a live Android API key); copy
+  `app/google-services.json.template` to `app/google-services.json` and add your Firebase
+  config. `scripts/verify` bootstraps the placeholder template for build-only/CI runs.
+- Canonical local verification command: `bash scripts/verify`
+  (`./gradlew testDebugUnitTest lintDebug`).
+- CI: `quality` (lean 6-gate), `Verify`, and `CodeQL` must pass on every PR to `main`.
 
 ## Technical Constraints & Considerations
 - **Minimum Android Version:** Requires Android API level 23 (Marshmallow) or higher.
