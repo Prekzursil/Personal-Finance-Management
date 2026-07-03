@@ -2,7 +2,7 @@
 
 This repository uses the **lean 6-gate** quality model (charter 2026-06-16). The previous
 "Quality Zero" / QZP machinery (mandatory zero-open findings on Sonar, Codacy, Semgrep,
-Sentry, DeepScan, gated behind required external tokens) has been **retired**; the lean
+Sentry, gated behind required external tokens) has been **retired**; the lean
 model is self-contained, requires no external SaaS tokens, and is the source of truth.
 
 ## CI checks
