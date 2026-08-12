@@ -1,0 +1,199 @@
+# Curated Java / Android security rules for the lean gate-4 (opengrep / Semgrep CE).
+# High-signal only, scoped to what this repo is: a single-module Android app
+# (SQLite via SQLiteOpenHelper, Google Sign-In + Drive backup, local PBKDF2
+# credential hashing). See README.md.
+rules:
+  - id: java-sql-string-concat
+    languages: [java]
+    severity: ERROR
+    message: >-
+      SQL built by string concatenation / String.format and handed to a SQLite
+      sink. Use a parameterized query (the selectionArgs / bindArgs overload).
+    metadata:
+      category: security
+      cwe: "CWE-89: SQL Injection"
+    patterns:
+      - pattern-either:
+          - pattern: $DB.rawQuery($Q, ...)
+          - pattern: $DB.execSQL($Q, ...)
+          - pattern: $DB.rawQueryWithFactory($F, $Q, ...)
+          - pattern: $DB.compileStatement($Q)
+      - metavariable-pattern:
+          metavariable: $Q
+          patterns:
+            - pattern-either:
+                - pattern: $A + $B
+                - pattern: String.format(...)
+                - pattern: $S.concat(...)
+
+  - id: java-runtime-exec-dynamic
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Runtime.exec / ProcessBuilder invoked with a non-literal command. Validate
+      or allowlist the input, and prefer an explicit argument array.
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+    patterns:
+      - pattern-either:
+          - pattern: Runtime.getRuntime().exec($CMD, ...)
+          - pattern: new ProcessBuilder($CMD, ...)
+      - pattern-not: Runtime.getRuntime().exec("...", ...)
+      - pattern-not: new ProcessBuilder("...", ...)
+
+  - id: java-weak-hash-md5-sha1
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Weak hash algorithm (MD2/MD5/SHA-1). For any security purpose use SHA-256+
+      or, for passwords, a KDF (PBKDF2 / scrypt / Argon2).
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+    patterns:
+      - pattern: MessageDigest.getInstance($ALG, ...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: "(?i)^\"(md2|md4|md5|sha-?1)\"$"
+
+  - id: java-weak-cipher-algorithm-or-mode
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Broken cipher or ECB mode requested. Use AES/GCM/NoPadding (or
+      AES/CBC/PKCS5Padding with a random IV and a separate MAC).
+    metadata:
+      category: security
+      cwe: "CWE-327"
+    patterns:
+      - pattern: Cipher.getInstance($ALG, ...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: "(?i)^\"(des|desede|tripledes|rc2|rc4|arcfour|blowfish)([/\"]|$)|^\"[^\"]*/ecb/"
+
+  - id: java-trustmanager-accepts-any-cert
+    languages: [java]
+    severity: ERROR
+    message: >-
+      X509TrustManager with an EMPTY checkServerTrusted/checkClientTrusted body
+      accepts every certificate, defeating TLS. Do not ship a permissive trust
+      manager; pin or use the platform trust store.
+    metadata:
+      category: security
+      cwe: "CWE-295: Improper Certificate Validation"
+    patterns:
+      - pattern-either:
+          - pattern: public void checkServerTrusted(...) {}
+          - pattern: public void checkClientTrusted(...) {}
+
+  - id: java-hostname-verifier-allows-any-host
+    languages: [java]
+    severity: ERROR
+    message: >-
+      HostnameVerifier.verify() unconditionally returns true, so any hostname is
+      accepted for any certificate (MITM). Use the default verifier.
+    metadata:
+      category: security
+      cwe: "CWE-297: Improper Validation of Certificate with Host Mismatch"
+    patterns:
+      - pattern: public boolean verify(...) { return true; }
+
+  - id: android-webview-javascript-enabled
+    languages: [java]
+    severity: ERROR
+    message: >-
+      JavaScript enabled in a WebView. If the WebView ever loads remote or
+      user-supplied content this is an XSS/RCE surface (especially with
+      addJavascriptInterface). Keep it off, or load only bundled assets.
+    metadata:
+      category: security
+      cwe: "CWE-79: Cross-site Scripting"
+    patterns:
+      - pattern: $S.setJavaScriptEnabled(true)
+
+  - id: android-webview-universal-file-access
+    languages: [java]
+    severity: ERROR
+    message: >-
+      WebView allowed to read file:// URLs from other origins. A single injected
+      script can then exfiltrate the app's private files.
+    metadata:
+      category: security
+      cwe: "CWE-200: Exposure of Sensitive Information"
+    patterns:
+      - pattern-either:
+          - pattern: $S.setAllowUniversalAccessFromFileURLs(true)
+          - pattern: $S.setAllowFileAccessFromFileURLs(true)
+
+  - id: android-world-accessible-file-mode
+    languages: [java]
+    severity: ERROR
+    message: >-
+      MODE_WORLD_READABLE / MODE_WORLD_WRITEABLE exposes app-private storage to
+      every other app on the device (and throws on API 24+). Use MODE_PRIVATE.
+    metadata:
+      category: security
+      cwe: "CWE-732: Incorrect Permission Assignment for Critical Resource"
+    patterns:
+      - pattern-either:
+          - pattern: MODE_WORLD_READABLE
+          - pattern: MODE_WORLD_WRITEABLE
+          - pattern: Context.MODE_WORLD_READABLE
+          - pattern: Context.MODE_WORLD_WRITEABLE
+
+  - id: java-insecure-random-for-security
+    languages: [java]
+    severity: ERROR
+    message: >-
+      java.util.Random / Math.random() is not cryptographically secure. Use
+      java.security.SecureRandom for salts, tokens, keys, IVs or nonces.
+    metadata:
+      category: security
+      cwe: "CWE-338: Use of Cryptographically Weak PRNG"
+    patterns:
+      - pattern-either:
+          - pattern: $T $V = new Random(...);
+          - pattern: $V = new Random(...);
+          - pattern: $T $V = Math.random();
+          - pattern: $V = Math.random();
+      - metavariable-regex:
+          metavariable: $V
+          regex: "(?i).*(token|secret|salt|nonce|key|password|passwd|otp|iv|session).*"
+
+  - id: java-cleartext-http-url
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Cleartext http:// endpoint. Android blocks cleartext by default since API
+      28 for good reason - use https://.
+    metadata:
+      category: security
+      cwe: "CWE-319: Cleartext Transmission of Sensitive Information"
+    patterns:
+      - pattern-either:
+          - pattern: new URL($U)
+          - pattern: new java.net.URL($U)
+          - pattern: Uri.parse($U)
+          - pattern: android.net.Uri.parse($U)
+      - metavariable-regex:
+          metavariable: $U
+          regex: "^\"http://(?!localhost|127\\.0\\.0\\.1|10\\.0\\.2\\.2)"
+
+  - id: android-log-sensitive-value
+    languages: [java]
+    severity: ERROR
+    message: >-
+      A credential-shaped value is being written to logcat, which is readable by
+      the developer tooling and persisted in bug reports. Do not log secrets.
+    metadata:
+      category: security
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+    patterns:
+      - pattern-either:
+          - pattern: Log.$M($TAG, $MSG)
+          - pattern: Log.$M($TAG, $MSG, $E)
+          - pattern: android.util.Log.$M($TAG, $MSG)
+      - metavariable-regex:
+          metavariable: $MSG
+          regex: "(?i).*(password|passwd|secret|api_?key|access_?token|credential|private_?key).*"
