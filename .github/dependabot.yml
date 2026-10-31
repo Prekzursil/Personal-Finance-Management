@@ -1,4 +1,7 @@
 version: 2
+# Fleet standard (QZP docs/BEST-CONFIG.md section 4): one rail per manifest
+# tree, weekly cadence, minors+patch grouped, majors NEVER ignored (each
+# arrives as its own PR so a fix that only ships in a new major can arrive).
 updates:
 - package-ecosystem: gradle
   directory: /
@@ -12,10 +15,22 @@ updates:
       update-types:
       - patch
       - minor
-  ignore:
-  - dependency-name: '*'
-    update-types:
-    - version-update:semver-major
+  labels:
+  - dependencies
+  - type:chore
+  - area:ci
+- package-ecosystem: pip
+  directory: /
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  groups:
+    pip-root-patch-minor:
+      patterns:
+      - '*'
+      update-types:
+      - patch
+      - minor
   labels:
   - dependencies
   - type:chore
@@ -32,10 +47,6 @@ updates:
       update-types:
       - patch
       - minor
-  ignore:
-  - dependency-name: '*'
-    update-types:
-    - version-update:semver-major
   labels:
   - dependencies
   - type:chore
