@@ -49,7 +49,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          queries: [security-extended, security-and-quality]
+          queries: security-extended,security-and-quality
 
       - name: Autobuild
         if: matrix.build-mode == 'autobuild'
