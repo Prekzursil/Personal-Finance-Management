@@ -60,3 +60,4 @@ jobs:
         with:
           category: /language:${{ matrix.language }}
           sha: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
