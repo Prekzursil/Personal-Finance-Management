@@ -59,19 +59,3 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: /language:${{ matrix.language }}
-          output: sarif-results
-          upload: false
-
-      # analyze@v4 attributes its upload to the transient pull_request merge
-      # commit (github.sha); the merge ref is rebuilt with a fresh timestamp on
-      # every merge attempt, so the red-blocker ruleset ("expecting 1 result
-      # from CodeQL for <merge> or <head>") never sees them as current. Write
-      # the SARIF out and upload it explicitly pinned to the stable PR head
-      # commit (refs/pull/N/head), which the ruleset accepts.
-      - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: sarif-results
-          category: /language:${{ matrix.language }}
-          sha: ${{ github.event.pull_request.head.sha || github.sha }}
-          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
