@@ -1,3 +1,10 @@
+# CodeQL — ADVANCED configuration (fleet CODEQL DECISION).
+# Runs BOTH suites — security-extended AND security-and-quality — which
+# strictly subsumes the default suite and the extended suite. Matrix over
+# every language this repository actually has (actions, java-kotlin), one
+# upload per language with a per-language category. The repo's own
+# test/lint suite (verify.yml) and the QZP lean gate (quality.yml) stay
+# wired beside this workflow.
 name: CodeQL
 
 permissions:
@@ -7,9 +14,9 @@ permissions:
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
   merge_group:
     types: [checks_requested]
   schedule:
@@ -17,15 +24,40 @@ on:
   workflow_dispatch:
 
 jobs:
-  codeql:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
     permissions:
       actions: read
       contents: read
       security-events: write
-    uses: Prekzursil/quality-zero-platform/.github/workflows/reusable-codeql.yml@b4fbe38470fd2831f86f194df5b638a271bae8b8
-    with:
-      repo_slug: ${{ github.repository }}
-      event_name: ${{ github.event_name }}
-      sha: ${{ github.event.pull_request.head.sha || github.sha }}
-      platform_repository: Prekzursil/quality-zero-platform
-      platform_ref: main
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: java-kotlin
+            build-mode: none
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        if: matrix.build-mode == 'autobuild'
+        uses: github/codeql-action/autobuild@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:${{ matrix.language }}
