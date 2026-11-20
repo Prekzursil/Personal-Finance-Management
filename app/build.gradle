@@ -54,7 +54,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.itextpdf:itextg:5.5.10'
     // Google Sign-In
-    implementation 'com.google.android.gms:play-services-auth:21.6.0'
+    implementation 'com.google.android.gms:play-services-auth:22.0.0'
 
     // Network and JSON handling
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
