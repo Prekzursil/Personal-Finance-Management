@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.api.identity.AuthorizationClient;
 import com.google.android.gms.auth.api.identity.AuthorizationRequest;
@@ -133,7 +134,7 @@ public class DriveServiceHelper {
             // The authorization client keeps a token cache of its own; drop the stale token there too.
             try {
                 Tasks.await(authorizationClient.clearToken(
-                                new ClearTokenRequest.Builder().setToken(accessToken).build()),
+                                ClearTokenRequest.builder().setToken(accessToken).build()),
                         AUTHORIZATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

@@ -78,7 +78,7 @@ final class GoogleAccounts {
         if (account != null) {
             // drive.file is the only scope the app is ever granted, so revoking it is
             // what the removed GoogleSignInClient.revokeAccess() did for this app.
-            authorizationClient.revokeAccess(new RevokeAccessRequest.Builder()
+            authorizationClient.revokeAccess(RevokeAccessRequest.builder()
                             .setAccount(account)
                             .setScopes(Collections.singletonList(DriveServiceHelper.DRIVE_FILE_SCOPE))
                             .build())
