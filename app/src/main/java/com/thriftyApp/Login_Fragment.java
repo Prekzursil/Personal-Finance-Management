@@ -263,6 +263,9 @@ public class Login_Fragment extends Fragment implements OnClickListener {
                 GoogleAuthProvider.getCredential(googleIdToken.getIdToken(), null);
 
         mAuth.signInWithCredential(cred).addOnCompleteListener(requireActivity(), task -> {
+            if (!isAdded()) {
+                return;
+            }
             if (!task.isSuccessful()) {
                 showToastSafe("Authentication failed.");
                 Log.e("Auth", "Auth failed", task.getException());
@@ -365,11 +368,16 @@ public class Login_Fragment extends Fragment implements OnClickListener {
             return;
         }
         if (driveAccount == null) {
-            // The sign-in screen was rebuilt while the sheet was up: the account was
-            // remembered before the sheet was shown.
+            // The sign-in screen may have been rebuilt while the sheet was up. The account
+            // was remembered before the sheet was shown, so it can be picked up again.
             driveAccount = GoogleAccounts.lastSignedInAccount(requireContext());
         }
-        if (resultCode == Activity.RESULT_OK && driveAccount != null) {
+        if (driveAccount == null) {
+            // The rebuilt sign-in screen ended that session: nothing is left to continue.
+            Log.w("SignIn", "The sign-in was reset while the Drive consent sheet was up");
+            return;
+        }
+        if (resultCode == Activity.RESULT_OK) {
             // Asking again now returns the grant without a pending intent.
             authorizeDriveAccount();
         } else {

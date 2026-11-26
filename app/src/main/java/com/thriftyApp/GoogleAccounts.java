@@ -83,7 +83,7 @@ final class GoogleAccounts {
                             .setScopes(Collections.singletonList(DriveServiceHelper.DRIVE_FILE_SCOPE))
                             .build())
                     .addOnFailureListener(activity, e ->
-                            Log.w(TAG, "Could not revoke Drive access for " + account.name, e));
+                            Log.w(TAG, "Could not revoke Drive access for the signed-in account", e));
         }
 
         CredentialManager credentialManager = CredentialManager.create(activity);

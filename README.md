@@ -102,7 +102,8 @@ live Firebase services.
 *   **Build System:** Gradle (AGP 9.2.1, Gradle 9.4.1).
 *   **AndroidX:** AppCompat, Preference, ConstraintLayout, GridLayout, RecyclerView, Material Components, CameraX (core/camera2/lifecycle/view).
 *   **Firebase:** Authentication (email + Google Sign-In) and Analytics (via the Firebase BoM).
-*   **Google Play Services:** Auth, Vision; ML Kit Text Recognition for OCR.
+*   **Google Play Services:** Auth (Drive authorization), Vision; ML Kit Text Recognition for OCR.
+*   **Sign-in:** Android Credential Manager with the Google ID token library (the legacy Google Sign-In SDK was removed in `play-services-auth` 22.0.0).
 *   **Charting:** MPAndroidChart.
 *   **Image Loading:** Glide.
 *   **PDF Handling:** iTextG, android-pdf-viewer.
