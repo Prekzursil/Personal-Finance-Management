@@ -20,7 +20,7 @@
 - **OCR:** Mentioned in `README.md` for scanning bills (`scanActivity.java`), but the specific library used isn't immediately obvious from the examined files.
 - **Google Services:**
     - Firebase Authentication (`FirebaseAuth`) for user login/signup.
-    - Google Sign-In (`GoogleSignIn`) for authentication and potentially Drive access.
+    - Google Sign-In through Android Credential Manager (`Login_Fragment`; the legacy `GoogleSignIn` SDK was removed in play-services-auth 22.0.0) for authentication. The `drive.file` grant for Drive access comes from `AuthorizationClient`.
     - Google Drive API (via `DriveServiceHelper` likely used by `BackupManager`) for data backup/restore.
 - **Preferences:** AndroidX `PreferenceManager` is used for storing settings like theme and language (`SettingsActivity`, `SettingsFragment`, `root_preferences.xml`).
 

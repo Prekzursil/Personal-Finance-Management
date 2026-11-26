@@ -1,10 +1,10 @@
 package com.thriftyApp;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.gson.JsonObject;
@@ -24,7 +24,7 @@ public class BackupManager {
     private final DriveServiceHelper driveServiceHelper;
     private final SharedPreferences prefs;
 
-    public BackupManager(Context context, GoogleSignInAccount account) {
+    public BackupManager(Context context, Account account) {
         this.context = context;
         this.databaseHelper = new DatabaseHelper(context);
         this.driveServiceHelper = new DriveServiceHelper(account, context);

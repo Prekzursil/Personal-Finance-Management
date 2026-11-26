@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.accounts.Account;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
@@ -31,10 +32,6 @@ import com.github.mikephil.charting.highlight.Highlight; // Added import
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -136,8 +133,7 @@ public class Dashboard extends BaseActivity {
 
         /* ---------- Google-Drive backup bootstrap ---------- */
         if (getIntent().hasExtra("google_account")) {
-            GoogleSignInAccount account =
-                getIntent().getParcelableExtra("google_account");
+            Account account = getIntent().getParcelableExtra("google_account");
             backupManager = new BackupManager(this, account);
 
             showProgressDialog("Initializing backup...");
@@ -159,8 +155,7 @@ public class Dashboard extends BaseActivity {
                 });
 
         } else {
-            GoogleSignInAccount account =
-                GoogleSignIn.getLastSignedInAccount(this);
+            Account account = GoogleAccounts.lastSignedInAccount(this);
             if (account != null) {
                 backupManager = new BackupManager(this, account);
                 backupManager.performSync(false)
@@ -232,17 +227,15 @@ public class Dashboard extends BaseActivity {
         });
 
         logout.setOnClickListener(v -> {
-            GoogleSignInClient gsc = GoogleSignIn.getClient(
-                this, GoogleSignInOptions.DEFAULT_SIGN_IN);
-            gsc.signOut().addOnCompleteListener(task -> {
-                gsc.revokeAccess();
-                FirebaseAuth.getInstance().signOut();
-                Intent i = new Intent(this, MainActivity.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                           Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(i);
-                finish();
-            });
+            // Revokes the Drive grant, clears Credential Manager's state and forgets the
+            // Google account; the login screen repeats this when it comes up.
+            GoogleAccounts.signOut(this);
+            FirebaseAuth.getInstance().signOut();
+            Intent i = new Intent(this, MainActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                       Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+            finish();
         });
 
         findViewById(R.id.showAllTextView).setOnClickListener(v -> {

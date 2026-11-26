@@ -54,8 +54,15 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:5.0.10'
     annotationProcessor 'com.github.bumptech.glide:compiler:5.0.10'
     implementation 'com.itextpdf:itextg:5.5.10'
-    // Google Sign-In
-    implementation 'com.google.android.gms:play-services-auth:21.6.0'
+    // Google Sign-In. play-services-auth 22.0.0 removed the legacy Google Sign-In SDK
+    // (GoogleSignIn / GoogleSignInClient / GoogleSignInAccount); sign-in now goes
+    // through Android Credential Manager with the Google ID token library. The same
+    // artifact still provides AuthorizationClient, which replaces
+    // GoogleSignInOptions.requestScopes for the drive.file backup grant.
+    implementation 'com.google.android.gms:play-services-auth:22.0.0'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.2.1'
 
     // Network and JSON handling
     implementation 'com.squareup.okhttp3:okhttp:5.5.1'

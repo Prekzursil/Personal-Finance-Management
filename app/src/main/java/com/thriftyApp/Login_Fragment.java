@@ -1,5 +1,7 @@
 package com.thriftyApp;
 
+import android.accounts.Account;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -23,26 +25,34 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialCancellationException;
+import androidx.credentials.exceptions.GetCredentialException;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.gms.auth.api.identity.AuthorizationRequest;
+import com.google.android.gms.auth.api.identity.AuthorizationResult;
+import com.google.android.gms.auth.api.identity.Identity;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -75,15 +85,27 @@ public class Login_Fragment extends Fragment implements OnClickListener {
     private DatabaseHelper databaseHelper;
 
     private FirebaseAuth mAuth;
-    private GoogleSignInClient mGoogleSignInClient;
+    // Android Credential Manager: the replacement for GoogleSignInClient, removed in
+    // play-services-auth 22.0.0. Its result arrives through CredentialManagerCallback, not
+    // through an Activity result.
+    private CredentialManager credentialManager;
     private MaterialCardView googleSignInButton;
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    // Modern replacement for the deprecated startActivityForResult/onActivityResult
-    // pair. Registered during fragment construction as required by the API.
-    private final ActivityResultLauncher<Intent> signInLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    result -> handleSignInResult(result.getData()));
+    // The Google account of the sign-in in progress, while the Drive consent sheet is up.
+    // Null once the sign-in is settled (the dashboard is told about the account, or the
+    // sign-in was abandoned).
+    private Account driveAccount;
+    // The consent sheet is shown at most once per sign-in, so a grant that keeps asking for
+    // it cannot turn into a loop.
+    private boolean driveConsentShown;
+
+    // Registered during fragment construction as required by the API. Google sign-in
+    // itself no longer uses an Activity result; this launcher carries the Drive consent
+    // sheet, the replacement for GoogleSignInOptions.requestScopes.
+    private final ActivityResultLauncher<IntentSenderRequest> driveConsentLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(),
+                    result -> onDriveConsentResult(result.getResultCode()));
 
     public Login_Fragment() {}
 
@@ -102,28 +124,8 @@ public class Login_Fragment extends Fragment implements OnClickListener {
         mAuth = FirebaseAuth.getInstance();
         // Ensure Firebase and Google sessions cleared on login screen
         mAuth.signOut();
-        GoogleSignInOptions gsoCleanup = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        GoogleSignIn.getClient(requireActivity(), gsoCleanup)
-                .signOut()
-                .addOnCompleteListener(requireActivity(), new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        // optionally revoke access:
-                        GoogleSignIn.getClient(requireActivity(), gsoCleanup).revokeAccess();
-                    }
-                });
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .requestProfile()
-                .requestScopes(new Scope("https://www.googleapis.com/auth/drive.file"))
-                .build();
-
-        mGoogleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
+        GoogleAccounts.signOut(requireActivity());
+        credentialManager = CredentialManager.create(requireContext());
 
         googleSignInButton = view.findViewById(R.id.googleSignInBtn);
         googleSignInButton.setOnClickListener(this);
@@ -193,26 +195,77 @@ public class Login_Fragment extends Fragment implements OnClickListener {
 
     /* ----------------------- Google sign-in -------------------------- */
     private void signInWithGoogle() {
-        signInLauncher.launch(mGoogleSignInClient.getSignInIntent());
+        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+                .setServerClientId(getString(R.string.default_web_client_id))
+                // Offer every account on the device plus "Add another account", as the
+                // removed GoogleSignInOptions.DEFAULT_SIGN_IN chooser did.
+                .setFilterByAuthorizedAccounts(false)
+                .build();
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build();
+
+        driveAccount = null;
+        driveConsentShown = false;
+
+        credentialManager.getCredentialAsync(requireActivity(), request, null,
+                ContextCompat.getMainExecutor(requireContext()),
+                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse result) {
+                        if (!isAdded()) {
+                            return;
+                        }
+                        handleSignInResult(result.getCredential());
+                    }
+
+                    @Override
+                    public void onError(GetCredentialException e) {
+                        if (!isAdded()) {
+                            return;
+                        }
+                        if (e instanceof GetCredentialCancellationException) {
+                            // The user dismissed the account picker: not a failure.
+                            Log.i("SignIn", "Google sign-in cancelled");
+                            return;
+                        }
+                        showToastSafe("Google Sign-In failed");
+                        Log.e("SignIn", "Google sign in failed", e);
+                    }
+                });
     }
 
-    private void handleSignInResult(Intent data) {
-        Task<GoogleSignInAccount> task =
-                GoogleSignIn.getSignedInAccountFromIntent(data);
-        try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            firebaseAuthWithGoogle(account);
-        } catch (ApiException e) {
+    private void handleSignInResult(Credential credential) {
+        if (!(credential instanceof CustomCredential)
+                || !GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(
+                        credential.getType())) {
+            String resultType = credential.getType();
             showToastSafe("Google Sign-In failed");
-            Log.e("SignIn", "Google sign in failed", e);
+            Log.e("SignIn", "Unexpected type of sign-in result: " + resultType);
+            return;
         }
+        GoogleIdTokenCredential googleIdToken;
+        try {
+            googleIdToken = GoogleIdTokenCredential.createFrom(credential.getData());
+        } catch (Exception e) {
+            // createFrom (a Kotlin API, so nothing is declared) throws
+            // GoogleIdTokenParsingException for an incomplete result and
+            // IllegalArgumentException for a malformed ID token.
+            showToastSafe("Google Sign-In failed");
+            Log.e("SignIn", "Received an invalid google id token response", e);
+            return;
+        }
+        firebaseAuthWithGoogle(googleIdToken);
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
+    private void firebaseAuthWithGoogle(GoogleIdTokenCredential googleIdToken) {
         AuthCredential cred =
-                GoogleAuthProvider.getCredential(account.getIdToken(), null);
+                GoogleAuthProvider.getCredential(googleIdToken.getIdToken(), null);
 
         mAuth.signInWithCredential(cred).addOnCompleteListener(requireActivity(), task -> {
+            if (!isAdded()) {
+                return;
+            }
             if (!task.isSuccessful()) {
                 showToastSafe("Authentication failed.");
                 Log.e("Auth", "Auth failed", task.getException());
@@ -227,17 +280,15 @@ public class Login_Fragment extends Fragment implements OnClickListener {
             String googleId = userContact.getEmailId();
 
             if (data != null && !data.isEmpty() && googleId.equals(user.getEmail())) {
-                String userId = data.get(1);
-                String budget = data.get(2);
+                Utils.userId = data.get(1);
+                Utils.budget = data.get(2);
 
-                handleBackup(account);
-                Utils.userId = userId;
-                Utils.budget = budget;
-
-                Intent intent = new Intent(getActivity(), SplashActivity.class);
-                intent.putExtra("google_account", account);
-                startActivity(intent);
-                requireActivity().finish();
+                // The removed GoogleSignInAccount was both the signed-in identity and the
+                // Android account the Drive backup runs under. Its e-mail identifies that
+                // account, so that is what the app remembers for the rest of the session.
+                Account account =
+                        GoogleAccounts.remember(requireContext(), googleIdToken.getEmail());
+                requestDriveAccess(account);
             } else {
                 showToastSafe("Welcome! Please complete sign-up.");
                 SignUp_Fragment signUpFragment = new SignUp_Fragment();
@@ -256,8 +307,106 @@ public class Login_Fragment extends Fragment implements OnClickListener {
         });
     }
 
+    /* ----------------------- Drive access ---------------------------- */
+    private void requestDriveAccess(Account account) {
+        driveAccount = account;
+        if (account == null) {
+            // Signed in, but the ID token named no account to run the backup under.
+            Log.w("SignIn", "The Google ID token carried no e-mail; Drive backup stays off");
+            continueToDashboard();
+            return;
+        }
+        authorizeDriveAccount();
+    }
+
+    /**
+     * Asks for the drive.file grant the backup needs. AuthorizationClient replaces the
+     * GoogleSignInOptions.requestScopes call that used to collect it with the sign-in.
+     */
+    private void authorizeDriveAccount() {
+        AuthorizationRequest request = new AuthorizationRequest.Builder()
+                .setAccount(driveAccount)
+                .setRequestedScopes(Collections.singletonList(DriveServiceHelper.DRIVE_FILE_SCOPE))
+                .build();
+        Identity.getAuthorizationClient(requireActivity()).authorize(request)
+                .addOnSuccessListener(requireActivity(), result -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    if (result.hasResolution()) {
+                        launchDriveConsent(result);
+                    } else {
+                        continueToDashboard();
+                    }
+                })
+                .addOnFailureListener(requireActivity(), e -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    Log.w("SignIn", "Drive authorization failed", e);
+                    driveAccessDenied();
+                });
+    }
+
+    private void launchDriveConsent(AuthorizationResult result) {
+        if (driveConsentShown || result.getPendingIntent() == null) {
+            driveAccessDenied();
+            return;
+        }
+        driveConsentShown = true;
+        try {
+            driveConsentLauncher.launch(new IntentSenderRequest.Builder(
+                    result.getPendingIntent().getIntentSender()).build());
+        } catch (RuntimeException e) {
+            Log.w("SignIn", "Could not show the Drive consent sheet", e);
+            driveAccessDenied();
+        }
+    }
+
+    private void onDriveConsentResult(int resultCode) {
+        if (!isAdded()) {
+            return;
+        }
+        if (driveAccount == null) {
+            // The sign-in screen may have been rebuilt while the sheet was up. The account
+            // was remembered before the sheet was shown, so it can be picked up again.
+            driveAccount = GoogleAccounts.lastSignedInAccount(requireContext());
+        }
+        if (driveAccount == null) {
+            // The rebuilt sign-in screen ended that session: nothing is left to continue.
+            Log.w("SignIn", "The sign-in was reset while the Drive consent sheet was up");
+            return;
+        }
+        if (resultCode == Activity.RESULT_OK) {
+            // Asking again now returns the grant without a pending intent.
+            authorizeDriveAccount();
+        } else {
+            driveAccessDenied();
+        }
+    }
+
+    /** The user is signed in, but with no Drive grant there is nothing to sync. */
+    private void driveAccessDenied() {
+        GoogleAccounts.forget(requireContext());
+        driveAccount = null;
+        continueToDashboard();
+    }
+
+    private void continueToDashboard() {
+        if (driveAccount != null) {
+            handleBackup(driveAccount);
+        }
+
+        Intent intent = new Intent(getActivity(), SplashActivity.class);
+        if (driveAccount != null) {
+            intent.putExtra("google_account", driveAccount);
+        }
+        startActivity(intent);
+        requireActivity().finish();
+    }
+
     /* ----------------------- Drive backup helpers -------------------- */
-    private void handleBackup(GoogleSignInAccount acc) {
+    private void handleBackup(Account acc) {
         DriveServiceHelper helper = new DriveServiceHelper(acc, requireContext());
 
         helper.readBackup()

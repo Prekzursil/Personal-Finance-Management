@@ -25,7 +25,7 @@
     - `firebase-analytics`: Usage tracking.
     - `firebase-bom`: Bill of Materials for managing Firebase library versions.
 - **Google Play Services & ML Kit:**
-    - `play-services-auth`: Authentication services, including Google Sign-In.
+    - `play-services-auth`: `AuthorizationClient`, which grants the `drive.file` scope. Google Sign-In itself uses Android Credential Manager (`androidx.credentials` + `googleid`); the legacy Google Sign-In SDK was removed in 22.0.0.
     - `play-services-vision` + `mlkit:text-recognition`: OCR for the bill-scanning feature (`scanActivity`).
     - `androidx.camera` (CameraX core/camera2/lifecycle/view): camera preview and capture for scanning.
 - **Charting:**
