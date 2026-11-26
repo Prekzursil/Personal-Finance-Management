@@ -158,20 +158,16 @@ public class Download extends BaseActivity {
 
     private void createPdfWrapper(String startDate, String endDate) throws IOException, DocumentException {
         int hasWriteStoragePermission = ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        // Runtime permissions exist since API 23 and minSdk is 24, so no SDK_INT gate is needed.
         if (hasWriteStoragePermission != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) { // Corrected permission
-                    showMessageOKCancel(getString(R.string.storage_permission_needed_message), // Using string resource
-                            (dialog, which) -> {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_PERMISSIONS);
-                                }
-                            });
-                    return;
-                }
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_PERMISSIONS);
-                return; 
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) { // Corrected permission
+                showMessageOKCancel(getString(R.string.storage_permission_needed_message), // Using string resource
+                        (dialog, which) ->
+                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_PERMISSIONS));
+                return;
             }
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_PERMISSIONS);
+            return; 
         }
         
         createPdf(startDate, endDate); // Call the method to create and save the PDF

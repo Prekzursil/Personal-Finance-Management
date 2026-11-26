@@ -30,7 +30,7 @@ This project was originally developed as a Bachelor's degree project.
 | Java source/target compatibility | 11 |
 | `compileSdk` | 37 |
 | `targetSdk` | 37 |
-| `minSdk` | 23 (Android 6.0, Marshmallow) |
+| `minSdk` | 24 (Android 7.0, Nougat) |
 
 To build the app you also need:
 
@@ -72,7 +72,7 @@ live Firebase services.
 
 ### 3. Build & run
 
-*   **Android Studio:** open the project, let Gradle sync, then run on an emulator or a physical device (Android 6.0 / API 23 or higher).
+*   **Android Studio:** open the project, let Gradle sync, then run on an emulator or a physical device (Android 7.0 / API 24 or higher).
 *   **Command line:**
 
     ```bash
