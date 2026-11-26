@@ -1,22 +1,30 @@
 package com.thriftyApp;
 
+import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
 import com.google.android.gms.auth.GoogleAuthUtil;
-import com.google.android.gms.auth.UserRecoverableAuthException;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.identity.AuthorizationClient;
+import com.google.android.gms.auth.api.identity.AuthorizationRequest;
+import com.google.android.gms.auth.api.identity.AuthorizationResult;
+import com.google.android.gms.auth.api.identity.ClearTokenRequest;
+import com.google.android.gms.auth.api.identity.Identity;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
@@ -36,6 +44,13 @@ public class DriveServiceHelper {
     private static final String BACKUP_FILENAME = "thrifty_backup.json";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
+    /** The only Google scope the app asks for: files it created itself in the user's Drive. */
+    static final String DRIVE_FILE_SCOPE_URL = "https://www.googleapis.com/auth/drive.file";
+    static final Scope DRIVE_FILE_SCOPE = new Scope(DRIVE_FILE_SCOPE_URL);
+    private static final String GOOGLE_AUTH_UTIL_SCOPE = "oauth2:" + DRIVE_FILE_SCOPE_URL;
+    /** Upper bound for the authorization calls made from the backup worker thread. */
+    private static final long AUTHORIZATION_TIMEOUT_SECONDS = 30;
+
     private final Executor executor = Executors.newSingleThreadExecutor();
     // Certificate pinning for the Google APIs endpoints this helper talks to.
     // Pinned to the Google Trust Services root (GTS Root R1) plus the current
@@ -50,21 +65,58 @@ public class DriveServiceHelper {
             .build();
     private final Gson gson = new Gson();
     private final Context context;
-    private final GoogleSignInAccount account;
+    // The Google account the user signed in with. The removed GoogleSignInAccount only
+    // ever served as the carrier of this Android Account.
+    private final Account account;
+    private final AuthorizationClient authorizationClient;
 
     // cached – refreshed lazily if Google returns 401
     private volatile String accessToken;
 
-    public DriveServiceHelper(GoogleSignInAccount account, Context context) {
+    public DriveServiceHelper(Account account, Context context) {
         this.context = context.getApplicationContext();
         this.account = account;
+        this.authorizationClient = Identity.getAuthorizationClient(this.context);
     }
 
     /* ---------------- Token helpers ---------------- */
 
+    /**
+     * The drive.file grant is given when the user consents at sign-in (AuthorizationClient, the
+     * replacement for GoogleSignInOptions.requestScopes). GoogleAuthUtil has always been the token
+     * source here, so it stays first. A grant that only the authorization client can see is handled
+     * by asking it directly: without UI (no consent sheet can be shown from this worker thread) and
+     * with a hard timeout, so a stalled client cannot wedge the backup executor.
+     */
     private String fetchAccessToken() throws Exception {
-        String scope = "oauth2:https://www.googleapis.com/auth/drive.file";
-        return GoogleAuthUtil.getToken(context, account.getAccount(), scope);
+        try {
+            return GoogleAuthUtil.getToken(context, account, GOOGLE_AUTH_UTIL_SCOPE);
+        } catch (GoogleAuthException | IOException e) {
+            String token = authorizeSilently();
+            if (token != null) {
+                return token;
+            }
+            throw e;
+        }
+    }
+
+    private String authorizeSilently() {
+        AuthorizationRequest request = new AuthorizationRequest.Builder()
+                .setAccount(account)
+                .setRequestedScopes(Collections.singletonList(DRIVE_FILE_SCOPE))
+                .build();
+        try {
+            AuthorizationResult result = Tasks.await(authorizationClient.authorize(request),
+                    AUTHORIZATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            // A pending intent means the user still has to consent, which cannot happen from here.
+            return result.hasResolution() ? null : result.getAccessToken();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (Exception e) {
+            Log.w(TAG, "Silent Drive authorization did not yield a token", e);
+            return null;
+        }
     }
 
     private synchronized String getAccessToken() throws Exception {
@@ -78,6 +130,16 @@ public class DriveServiceHelper {
     private synchronized void invalidateToken() {
         if (accessToken != null) {
             GoogleAuthUtil.invalidateToken(context, accessToken);
+            // The authorization client keeps a token cache of its own; drop the stale token there too.
+            try {
+                Tasks.await(authorizationClient.clearToken(
+                                new ClearTokenRequest.Builder().setToken(accessToken).build()),
+                        AUTHORIZATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                Log.w(TAG, "Could not clear the authorization client's token", e);
+            }
             accessToken = null;
         }
     }

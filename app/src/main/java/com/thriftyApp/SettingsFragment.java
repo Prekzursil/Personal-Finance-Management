@@ -8,7 +8,6 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import android.content.Intent;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -20,7 +19,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
         backupManager = new BackupManager(requireContext(),
-                GoogleSignIn.getLastSignedInAccount(requireContext()));
+                GoogleAccounts.lastSignedInAccount(requireContext()));
 
         updateCurrentBudgetSummary(); // Initial update
 

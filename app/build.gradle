@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.preethi.thrifty"
-        minSdk 23
+        minSdk 24
         targetSdk 37
         versionCode = 1
         versionName = "1.0"
@@ -53,8 +53,15 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.itextpdf:itextg:5.5.10'
-    // Google Sign-In
+    // Google Sign-In. play-services-auth 22.0.0 removed the legacy Google Sign-In SDK
+    // (GoogleSignIn / GoogleSignInClient / GoogleSignInAccount); sign-in now goes
+    // through Android Credential Manager with the Google ID token library. The same
+    // artifact still provides AuthorizationClient, which replaces
+    // GoogleSignInOptions.requestScopes for the drive.file backup grant.
     implementation 'com.google.android.gms:play-services-auth:22.0.0'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.2.1'
 
     // Network and JSON handling
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'

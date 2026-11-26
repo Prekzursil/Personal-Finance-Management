@@ -1,5 +1,6 @@
 package com.thriftyApp;
 
+import android.accounts.Account;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,7 +9,6 @@ import android.widget.ImageView;
 import com.thriftyApp.BaseActivity;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 /**
  * Simple splash screen that shows a loading GIF, waits 1 s, then
@@ -17,7 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 public class SplashActivity extends BaseActivity {
 
     private static final int SPLASH_TIME = 1000; // ms
-    private GoogleSignInAccount googleAccount;
+    private Account googleAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
