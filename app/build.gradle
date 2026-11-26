@@ -9,7 +9,8 @@ android {
 
     defaultConfig {
         applicationId "com.preethi.thrifty"
-        minSdk 23
+        // 24 (Android 7.0): firebase-auth 25.0.0 declares minSdk 24.
+        minSdk 24
         targetSdk 37
         versionCode = 1
         versionName = "1.0"

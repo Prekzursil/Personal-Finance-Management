@@ -8,7 +8,7 @@
 
 ## Android Configuration
 - **`compileSdk`:** 37
-- **`minSdk`:** 23
+- **`minSdk`:** 24
 - **`targetSdk`:** 37
 - **`applicationId`:** `com.preethi.thrifty` (namespace `com.thriftyApp`)
 - **Vector Drawables:** Enabled (`useSupportLibrary = true`)
@@ -52,7 +52,7 @@
 - CI: `quality` (lean 6-gate), `Verify`, and `CodeQL` must pass on every PR to `main`.
 
 ## Technical Constraints & Considerations
-- **Minimum Android Version:** Requires Android API level 23 (Marshmallow) or higher.
+- **Minimum Android Version:** Requires Android API level 24 (Nougat) or higher.
 - **Permissions:** Will require permissions for Camera (for OCR), Internet (for Firebase, Google Sign-In, Drive), and potentially Storage (for PDF export/import, Drive sync).
 - **Google Drive API:** Integration requires handling Google Sign-In and Drive API scopes and authorization. The `BackupManager` class likely encapsulates this logic.
 - **Static Utils Class:** Reliance on a static `Utils` class for shared state (`userId`, `income`, `expense`) could lead to potential issues if not managed carefully across Activities and background processes.
