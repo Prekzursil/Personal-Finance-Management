@@ -46,7 +46,6 @@ import com.google.android.gms.auth.api.identity.AuthorizationResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -248,8 +247,10 @@ public class Login_Fragment extends Fragment implements OnClickListener {
         GoogleIdTokenCredential googleIdToken;
         try {
             googleIdToken = GoogleIdTokenCredential.createFrom(credential.getData());
-        } catch (GoogleIdTokenParsingException | IllegalArgumentException e) {
-            // createFrom rejects a malformed ID token with an unchecked exception.
+        } catch (Exception e) {
+            // createFrom (a Kotlin API, so nothing is declared) throws
+            // GoogleIdTokenParsingException for an incomplete result and
+            // IllegalArgumentException for a malformed ID token.
             showToastSafe("Google Sign-In failed");
             Log.e("SignIn", "Received an invalid google id token response", e);
             return;
